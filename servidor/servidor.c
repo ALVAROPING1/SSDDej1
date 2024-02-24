@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "petitions.h"
+#include <stdio.h>
 
 #define MAXPETITIONS 10
 linked_list *list;
