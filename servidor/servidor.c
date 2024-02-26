@@ -6,6 +6,7 @@
 #include <string.h>
 #include "petitions.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 #define MAXPETITIONS 10
 linked_list *list;
@@ -18,6 +19,8 @@ void process_petition(void *msg){
   
   petition p;
   response r;
+  memset(&p,0,sizeof(petition));
+  memset(&r, 0, sizeof(response));
   
   // zona de copia de mensajes.
   pthread_mutex_lock(&m_copy);
@@ -46,6 +49,7 @@ void process_petition(void *msg){
     
     // icialización de servicio 
     case 1:
+      printf("Caso 1\n");
       r.op_id = 1;
       clear(list);
       resp = 0;
@@ -53,36 +57,42 @@ void process_petition(void *msg){
 
     // creación de vector nuevo
     case 2:
+      printf("Caso 2\n");
       r.op_id = 2;
       resp = set_value(list, p.key, p.val1, p.n_value2, p.value2);
       break;
 
     // obtención de un vector ya creado.
     case 3:
+      printf("Caso 3\n");
       r.op_id = 3;
       resp = get_value(list, p.key, r.val1, &r.n_value2, r.value2);
       break;
 
     // modificación de un vector ya creado.
     case 4:
+      printf("Caso 4\n");
       r.op_id = 4;
       resp = modify_value(list, p.key, p.val1, p.n_value2, p.value2);
       break;
     
     // borrado de un vector con una clave específica.
     case 5:
+      printf("Caso 5\n");
       r.op_id = 5;
       resp = delete_key(list, p.key);
       break;
 
     // comprobación de existencia de una clave.
     case 6:
+      printf("Caso 6\n");
       r.op_id = 6;
       resp = exist(list, p.key);
       break;
 
     // caso de código de operación no válido.
     default:
+      printf("Caso default\n");
       r.op_id = -1;
       resp = -1;
       break;
@@ -92,7 +102,9 @@ void process_petition(void *msg){
   r.res_op = resp;
 
   // poner la respuesta en la cola correspondiente.
-  mq_send(mq_resp, (char *)&r, sizeof(response),NULL);
+  mq_send(mq_resp, (char *)&r, sizeof(response),0);
+ 
+  mq_close(mq_resp);
 
   pthread_exit(0);
 }
@@ -110,29 +122,38 @@ int main(int argc, char const *argv[])
 
   pthread_t thrd_worker;
   
-  pthread_attr_t *atts;
-  pthread_attr_init(atts);
-  pthread_attr_setdetachstate(atts, PTHREAD_CREATE_DETACHED);
+  pthread_attr_t atts;
+  pthread_attr_init(&atts);
+  pthread_attr_setdetachstate(&atts, PTHREAD_CREATE_DETACHED);
+ 
+  struct mq_attr attr = {
+    0777,
+    10,
+    sizeof(petition),
+    0
+  };
+
+  int mq_pet = mq_open("/mq_pet", O_RDONLY | O_CREAT, 0777, &attr);
   
-  struct mq_attr attrs = { NULL, 10, sizeof(petition), NULL};
-  int mq_pet = mq_open("/mq_pet", O_RDONLY | O_CREAT, 0777);
-  
+  if (mq_pet == -1){
+    return 1;
+  } else {
+    printf("Cola creada: %d",mq_pet);
+  } 
+
+  printf("Servidor conectado. Empezando a recivir peticiones ...\n");
   // bucle de peticiones
-  int i = 0;
-  char msg[sizeof(petition)];
+  petition p;
+  memset(&p, 0, sizeof(petition));
 
   while (1){
 
-    mq_receive(mq_pet,msg,sizeof(petition),NULL);
-    
-    // soporte para operación de parar el servidor con código de operación 7.
-    if (((petition *)msg)->op_id == 7){
-      break;
-    }
+    int res = mq_receive(mq_pet,(char *)&p,sizeof(petition),(unsigned int *)NULL);
+    printf("Restultado recivimiento: %d",res);
+    printf("Petición recibida!!\n"); 
 
-    pthread_create(&thrd_worker, atts , (void *)process_petition, (void *)msg);
-    
-    i += (1 % MAXPETITIONS);
+    pthread_create(&thrd_worker, &atts , (void *)process_petition, (void *)&p);
+     
     
     // esperar hasta que el hilo se haya copiado los argumentos
     // para crear otro.
@@ -149,7 +170,7 @@ int main(int argc, char const *argv[])
   // cerrar las estructuras de datos.
   destroy(list);
   mq_close(mq_pet);
-  pthread_attr_destroy(atts);
+  pthread_attr_destroy(&atts);
 
   //destruir todos los mutex y conditions.
   pthread_mutex_destroy(&m_copy);

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   atts.mq_msgsize = sizeof(peticion);
 
   int mq_pet = mq_open("/mq_pet", O_CREAT | O_RDONLY, 0777, &atts);
-  int mq_resp = mq_open("mq_resp", O_WRONLY);
+  int mq_resp = mq_open("/mq_resp", O_WRONLY);
 
   peticion p;
   response r;

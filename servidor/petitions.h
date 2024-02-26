@@ -20,4 +20,5 @@ typedef struct response {
   int res_op;
 } response;
 
+
 #endif // !PETITION_H

@@ -5,8 +5,11 @@
 int main(int argc, char *argv[])
 { 
   init();
-
-  int res = get_value(0, NULL, NULL, NULL);
+  
+  char pal[256];
+  int n_v;
+  double vec_nums[32];
+  int res = get_value(0, pal, &n_v, vec_nums);
   if (res == -1){
     printf("Test Get_Value con servidor vacío de elementos: True.\n");
   } else {
@@ -17,7 +20,7 @@ int main(int argc, char *argv[])
   double vec[3] = {1,2,3};
   int res2 = set_value(1, str, 3, vec);
 
-  if (exist(1) == 1){
+  if (exist(1) == 1 && res2 == 0){
     printf("Test de inserción de un vector en servidor: True.\n");
   } else {
     printf("Test de inserción de un vector en servidor: False.\n");
