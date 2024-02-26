@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 { 
-  init();
+  init_service();
   
   char pal[256];
   int n_v;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     printf("Test de eliminación y existencia de un elemento existente: False.\n");
   }
 
-
+  exit_service();
 
   return 0;
 }

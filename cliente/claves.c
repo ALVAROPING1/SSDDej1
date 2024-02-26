@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int init(){
+int init_service(){
   struct mq_attr attr = {
     0777,
     10,
@@ -17,7 +17,7 @@ int init(){
   petition p;
   response r;
   memset(&p,0,sizeof(petition));
-  memset(&r,0,sizeof(response));;
+  memset(&r,0,sizeof(response));
 
   p.op_id = 1;
 
@@ -43,7 +43,7 @@ int set_value(int key, char *value1, int n_value2, double *value2){
   petition p;
   response r;
   memset(&p,0,sizeof(petition));
-  memset(&r,0,sizeof(response));;
+  memset(&r,0,sizeof(response));
 
   
   p.op_id = 2;
@@ -77,7 +77,7 @@ int get_value(int key, char *value1, int *n_value, double *value2){
   petition p;
   response r;
   memset(&p,0,sizeof(petition));
-  memset(&r,0,sizeof(response));;
+  memset(&r,0,sizeof(response));
   
 
   p.op_id = 3;
@@ -116,7 +116,7 @@ int modify_value(int key, char *value1, int n_value2, double *value2){
   petition p;
   response r;
   memset(&p,0,sizeof(petition));
-  memset(&r,0,sizeof(response));;
+  memset(&r,0,sizeof(response));
 
   
   p.op_id = 4;
@@ -151,7 +151,7 @@ int delete_key(int key){
   petition p;
   response r;
   memset(&p,0,sizeof(petition));
-  memset(&r,0,sizeof(response));;
+  memset(&r,0,sizeof(response));
 
 
   p.op_id = 5;
@@ -179,7 +179,7 @@ int exist(int key){
   petition p;
   response r;
   memset(&p,0,sizeof(petition));
-  memset(&r,0,sizeof(response));;
+  memset(&r,0,sizeof(response));
 
 
   p.op_id = 6;
@@ -192,4 +192,19 @@ int exist(int key){
   mq_close(mq_resp);
   return r.res_op;
 
+}
+
+int exit_service(){
+ 
+  int mq_pet = mq_open("/mq_pet", O_WRONLY);
+  
+  petition p;
+  memset(&p,0,sizeof(petition));
+  
+  p.op_id = 7;
+
+  mq_send(mq_pet, (char *)&p, sizeof(petition), 0);
+  
+  mq_close(mq_pet);
+  return 0;
 }

@@ -49,7 +49,6 @@ void process_petition(void *msg){
     
     // icialización de servicio 
     case 1:
-      printf("Caso 1\n");
       r.op_id = 1;
       clear(list);
       resp = 0;
@@ -57,42 +56,36 @@ void process_petition(void *msg){
 
     // creación de vector nuevo
     case 2:
-      printf("Caso 2\n");
       r.op_id = 2;
       resp = set_value(list, p.key, p.val1, p.n_value2, p.value2);
       break;
 
     // obtención de un vector ya creado.
     case 3:
-      printf("Caso 3\n");
       r.op_id = 3;
       resp = get_value(list, p.key, r.val1, &r.n_value2, r.value2);
       break;
 
     // modificación de un vector ya creado.
     case 4:
-      printf("Caso 4\n");
       r.op_id = 4;
       resp = modify_value(list, p.key, p.val1, p.n_value2, p.value2);
       break;
     
     // borrado de un vector con una clave específica.
     case 5:
-      printf("Caso 5\n");
       r.op_id = 5;
       resp = delete_key(list, p.key);
       break;
 
     // comprobación de existencia de una clave.
     case 6:
-      printf("Caso 6\n");
       r.op_id = 6;
       resp = exist(list, p.key);
       break;
 
     // caso de código de operación no válido.
     default:
-      printf("Caso default\n");
       r.op_id = -1;
       resp = -1;
       break;
@@ -134,23 +127,26 @@ int main(int argc, char const *argv[])
   };
 
   int mq_pet = mq_open("/mq_pet", O_RDONLY | O_CREAT, 0777, &attr);
-  
-  if (mq_pet == -1){
-    return 1;
-  } else {
-    printf("Cola creada: %d",mq_pet);
-  } 
+ 
 
-  printf("Servidor conectado. Empezando a recivir peticiones ...\n");
   // bucle de peticiones
+  printf("Servidor conectado. Empezando a recivir peticiones ...\n");
   petition p;
   memset(&p, 0, sizeof(petition));
 
   while (1){
 
-    int res = mq_receive(mq_pet,(char *)&p,sizeof(petition),(unsigned int *)NULL);
-    printf("Restultado recivimiento: %d",res);
-    printf("Petición recibida!!\n"); 
+    int res = mq_receive(mq_pet,(char *)&p,sizeof(petition),(unsigned int *)NULL); 
+    if (res != -1){
+      printf("\nPetición recibida con exito!!\n");
+    } else {
+      printf("\nError de recibimiento de petición!!\n");
+    }
+   
+    // soporte para peticiones de terminación de servicio.
+    if (p.op_id == 7){
+      break;
+    }
 
     pthread_create(&thrd_worker, &atts , (void *)process_petition, (void *)&p);
      
