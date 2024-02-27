@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "../common/claves.h"
+#include "servidor_claves.h"
 
 struct vector_node {
     int key;

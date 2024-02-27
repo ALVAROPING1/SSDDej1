@@ -1,11 +1,13 @@
 #include <mqueue.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../common/error_handling.h"
+#include "servidor_claves.h"
 #include "servidor_handler.h"
 
 pthread_mutex_t m_copy;
@@ -23,12 +25,43 @@ void* setup_request(void* request) {
     return (void*) (long) handle_request(&req);
 }
 
+mqd_t queue;
+pthread_attr_t t_attr;
+
+void siginthandler(int param) {
+    printf("\n\033[32;1m[SERVER CLOSED]\033[0m\n");
+    // Cerrar las estructuras de datos.
+    destroy();
+    bool error = false;
+    if (mq_close(queue) != 0) {
+        perror("Error closing requests message queue");
+        error = true;
+    };
+    if (pthread_attr_destroy(&t_attr) != 0) {
+        perror("Error destroying thread attributes struct");
+        error = true;
+    };
+
+    // Destruir todos los mutex y conditions.
+    if (pthread_mutex_destroy(&m_copy) != 0) {
+        perror("Error destroying copy mutex");
+        error = true;
+    };
+    if (pthread_cond_destroy(&c_copy) != 0) {
+        perror("Error destroying copy condition");
+        error = true;
+    };
+    exit(error);
+}
+
 int main(int argc, char* argv[]) {
     // Inicializar mutex de copia y condition
     pthread_mutex_init(&m_copy, NULL);
     pthread_cond_init(&c_copy, NULL);
+    if (signal(SIGINT, siginthandler) == SIG_ERR) {
+        perror("Error setting `SIGINT` handler");
+    };
 
-    pthread_attr_t t_attr;
     CHECK(pthread_attr_init(&t_attr),
           "Error creating thread attributes struct");
     CHECK(pthread_attr_setdetachstate(&t_attr, PTHREAD_CREATE_DETACHED),
@@ -37,9 +70,9 @@ int main(int argc, char* argv[]) {
     Request request;
     const struct mq_attr q_attr = {.mq_msgsize = sizeof(Request),
                                    .mq_maxmsg = 10};
-    mqd_t queue = CHECK(mq_open("/SERVIDOR", O_CREAT | O_RDONLY, 0700, &q_attr),
-                        "Error creating requests message queue",
-                        -1);
+    queue = CHECK(mq_open("/SERVIDOR", O_CREAT | O_RDONLY, 0700, &q_attr),
+                  "Error creating requests message queue",
+                  -1);
 
     printf("\033[32;1m[SERVER STARTED]\033[0m\n");
 
@@ -66,16 +99,3 @@ int main(int argc, char* argv[]) {
 
     return EXIT_SUCCESS;
 }
-
-// int main(int argc, char const *argv[])
-// {
-//   // cerrar las estructuras de datos.
-//   destroy(list);
-//   mq_close(mq_pet);
-//   pthread_attr_destroy(&atts);
-//
-//   //destruir todos los mutex y conditions.
-//   pthread_mutex_destroy(&m_copy);
-//   pthread_cond_destroy(&c_copy);
-//   return 0;
-// }
