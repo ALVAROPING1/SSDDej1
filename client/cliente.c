@@ -1,10 +1,11 @@
 #include <string.h>
 #include <stdio.h>
-#include "claves.h"
+
+#include "../common/claves.h"
 
 int main(int argc, char *argv[])
 { 
-  init_service();
+  init();
   
   char pal[256];
   int n_v;
@@ -57,8 +58,6 @@ int main(int argc, char *argv[])
   } else {
     printf("Test de eliminación y existencia de un elemento existente: False.\n");
   }
-
-  exit_service();
 
   return 0;
 }

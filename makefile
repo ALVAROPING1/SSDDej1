@@ -1,24 +1,28 @@
 CC=gcc
-CFLAGS= -Wall -g
-NAME_LIB= libclaves.so
-LIB= -lclaves -L.
+CFLAGS=-Wall -Werror -g
+NAME_LIB=libclaves.so
+LIB=-lclaves -L. -Wl,-rpath=.
 
-.PHONY: ALL
+.PHONY: all clean
 
-ALL: GEN_LIB BLD_CLI BLD_SER
+all: $(NAME_LIB) cliente servidor
 
-GEN_LIB: cliente/claves.c
-	$(CC) $(CFLAGS) -shared -o $(NAME_LIB) cliente/claves.c
+$(NAME_LIB): client/claves.c
+	$(CC) $(CFLAGS) -shared -o $(NAME_LIB) -fpic client/claves.c
 
-BLD_CLI: $(NAME_LIB) cliente/cliente.c
-	$(CC) $(CFLAGS) -o Cliente cliente/cliente.c $(LIB)
-	echo "Instalando librería dinámica en el sistema:"
+client/claves.o:
+	:
 
-	sudo mv $(NAME_LIB) /usr/local/lib/$(NAME_LIB)
-	sudo ldconfig
+%.o: %.c
+	@echo "Compiling... $<"
+	$(CC) $(CFLAGS) -c $< -o $@
 
-BLD_SER: servidor/linked_list.c servidor/servidor.c 
-	$(CC) $(CFLAGS) -c servidor/linked_list.c -o servidor/l-list.o -lpthread
-	$(CC) $(CFLAGS) -c servidor/servidor.c -o servidor/server.o -lpthread
-	$(CC) $(CFLAGS) -o Servidor servidor/l-list.o servidor/server.o -lpthread -lgcc
-	
+cliente: client/cliente.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
+
+servidor: server/linked_list.o server/servidor_handler.o server/servidor.o
+	$(CC) $(CFLAGS) -lpthread -o $@ $^
+
+clean:
+	rm client/*.o
+	rm server/*.o

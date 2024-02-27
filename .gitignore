@@ -1,5 +1,5 @@
 *.o
 libclaves.so
-Cliente
-Servidor
+/cliente
+/servidor
 
