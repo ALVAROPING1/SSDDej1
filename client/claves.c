@@ -76,11 +76,11 @@ int get_value(const int key,
               double vec[MAX_VEC_SIZE]) {
     Request request = {.op_code = Get, .key = key};
     Response response;
-    int res = make_request(&request, &response);
+    CHECK(make_request(&request, &response));
     strcpy(str, response.str);
     *vec_size = response.vec_size;
     memcpy(vec, response.vec, sizeof(*vec) * response.vec_size);
-    return res;
+    return 0;
 }
 
 int set_value(const int key,
