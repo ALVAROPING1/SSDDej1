@@ -6,6 +6,19 @@
 #include "../common/error_handling.h"
 #include "../common/messages.h"
 
+// ╔═══════════════════════════════════════════════════════════════════════════╗
+// ║                             Server Connection                             ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
+
+/**
+ * Sends a request to the server and receives the result
+ *
+ * @param request Request to send
+ * @param response Buffer in which the response should be stored
+ * @param q_server Server message queue
+ * @param q_res Response message queue
+ * @return Error code
+ */
 int send_message(const Request* request,
                  Response* response,
                  const mqd_t q_server,
@@ -19,8 +32,18 @@ int send_message(const Request* request,
     return 0;
 }
 
+#define TRY(expr, err_msg)                                                     \
+    if ((expr) == -1) { perror(err_msg); }
+
+/**
+ * Makes a request to the server and receives the result
+ *
+ * @param request Request to send
+ * @param response Buffer in which the response should be stored
+ * @return Error code
+ */
 int make_request(Request* request, Response* response) {
-    snprintf(request->q_name, 32, "/CLIENT_%d", getpid());
+    snprintf(request->q_name, sizeof(request->q_name), "/CLIENT_%d", getpid());
 
     const struct mq_attr q_attr = {.mq_msgsize = sizeof(Response),
                                    .mq_maxmsg = 10};
@@ -40,17 +63,15 @@ int make_request(Request* request, Response* response) {
         response->ret_value = -1;
     }
 
-    if (mq_close(q_server) == -1) {
-        perror("Error closing server message queue");
-    };
-    if (mq_close(q_res) == -1) {
-        perror("Error closing response message queue");
-    };
-    if (mq_unlink(request->q_name) == -1) {
-        perror("Error deleting response message queue");
-    };
+    TRY(mq_close(q_server), "Error closing server message queue");
+    TRY(mq_close(q_res), "Error closing response message queue");
+    TRY(mq_unlink(request->q_name), "Error deleting response message queue");
     return response->ret_value;
 }
+
+// ╔═══════════════════════════════════════════════════════════════════════════╗
+// ║                            API Implementation                             ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
 
 int init() {
     Request request = {.op_code = Init};

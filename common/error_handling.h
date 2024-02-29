@@ -10,6 +10,9 @@
  */
 #define ERROR(msg) "\033[31;1m[ERROR]:\033[0m " msg "\n"
 
+/**
+ * `CHECK()` macro with 3 parameters
+ */
 #define _CHECK3(expr, err_msg, err_val)                                        \
     ({                                                                         \
         __auto_type res = expr;                                                \
@@ -20,12 +23,18 @@
         res;                                                                   \
     })
 
+/**
+ * `CHECK()` macro with 2 parameters
+ */
 #define _CHECK2(expr, err_msg)                                                 \
     if ((expr) != 0) {                                                         \
         perror(err_msg);                                                       \
         return -1;                                                             \
     }
 
+/**
+ * `CHECK()` macro with a single parameter
+ */
 #define _CHECK1(expr)                                                          \
     if ((expr) != 0) { return -1; }
 

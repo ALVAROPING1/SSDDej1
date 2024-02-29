@@ -5,7 +5,14 @@
 #include "../common/error_handling.h"
 #include "servidor_handler.h"
 
-int process_request(const Request* req, Response* res) {
+/**
+ * Executes a request
+ *
+ * @param req Request to execute
+ * @param res Result of the execution of the request
+ * @return Error code generated during the execution of the request
+ */
+int execute_request(const Request* req, Response* res) {
     // no es zona crítica ya que las operaciones se realizan de forma atómica
     // debido al mutex incorporado en la lista enlazada.
     switch (req->op_code) {
@@ -29,7 +36,7 @@ int handle_request(const Request* request) {
     Response response;
     const struct mq_attr q_attr = {.mq_msgsize = sizeof(Response),
                                    .mq_maxmsg = 10};
-    response.ret_value = process_request(request, &response);
+    response.ret_value = execute_request(request, &response);
     mqd_t queue =
         CHECK(mq_open(request->q_name, O_CREAT | O_WRONLY, 0700, &q_attr),
               "Error opening response message queue",

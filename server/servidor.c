@@ -10,10 +10,19 @@
 #include "servidor_claves.h"
 #include "servidor_handler.h"
 
+// Copy request mutex
 pthread_mutex_t m_copy;
-bool copied = false;
+// Copy request condition
 pthread_cond_t c_copy;
+// Copy request condition variable
+bool copied = false;
 
+/**
+ * Setup function for processing a request in a new thread
+ *
+ * @param request Request to process. Should be a pointer to a `Request` struct
+ * @return Error code of the processing of the request
+ */
 void* setup_request(void* request) {
     Request req;
     memcpy(&req, request, sizeof(req));
@@ -34,33 +43,34 @@ void* setup_request(void* request) {
 mqd_t queue;
 pthread_attr_t t_attr;
 
-void siginthandler(int param) {
+#define TRY(expr, err_msg)                                                     \
+    if ((expr) != 0) {                                                         \
+        perror(err_msg);                                                       \
+        error = false;                                                         \
+    }
+
+/**
+ * SIGINT Handler for closing the server
+ */
+void siginthandler() {
     printf("\n\033[32;1m[SERVER CLOSED]\033[0m\n");
     // Cerrar las estructuras de datos.
     destroy();
     bool error = false;
-    if (mq_close(queue) != 0) {
-        perror("Error closing requests message queue");
-        error = true;
-    };
-    if (pthread_attr_destroy(&t_attr) != 0) {
-        perror("Error destroying thread attributes struct");
-        error = true;
-    };
-
-    // Destruir todos los mutex y conditions.
-    if (pthread_mutex_destroy(&m_copy) != 0) {
-        perror("Error destroying copy mutex");
-        error = true;
-    };
-    if (pthread_cond_destroy(&c_copy) != 0) {
-        perror("Error destroying copy condition");
-        error = true;
-    };
+    TRY(mq_close(queue), "Error closing requests message queue");
+    TRY(pthread_attr_destroy(&t_attr),
+        "Error destroying thread attributes struct");
+    TRY(pthread_mutex_destroy(&m_copy), "Error destroying copy mutex");
+    TRY(pthread_cond_destroy(&c_copy), "Error destroying copy condition");
     exit(error);
 }
 
-int main(int argc, char* argv[]) {
+/**
+ * Server entry point
+ *
+ * @return Error code of the execution if there was an irrecoverable error
+ */
+int main() {
     // Inicializar mutex de copia y condition
     pthread_mutex_init(&m_copy, NULL);
     pthread_cond_init(&c_copy, NULL);
@@ -93,6 +103,7 @@ int main(int argc, char* argv[]) {
         if (pthread_create(&thread, &t_attr, setup_request, (void*) &request) !=
             0) {
             perror("Error creating thread to handle the request");
+            continue;
         }
 
         CHECK(pthread_mutex_lock(&m_copy),
