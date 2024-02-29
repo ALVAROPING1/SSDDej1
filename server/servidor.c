@@ -18,10 +18,16 @@ void* setup_request(void* request) {
     Request req;
     memcpy(&req, request, sizeof(req));
     // Zona de copia de mensajes
-    pthread_mutex_lock(&m_copy);
+    if (pthread_mutex_lock(&m_copy) != 0) {
+        perror("Error locking copy mutex on worker thread");
+        return (void*) -1;
+    }
     copied = true;
     pthread_cond_signal(&c_copy);
-    pthread_mutex_unlock(&m_copy);
+    if (pthread_mutex_unlock(&m_copy) != 0) {
+        perror("Error unlocking copy mutex on worker thread");
+        return (void*) -1;
+    }
     return (void*) (long) handle_request(&req);
 }
 
@@ -89,12 +95,14 @@ int main(int argc, char* argv[]) {
             perror("Error creating thread to handle the request");
         }
 
-        CHECK(pthread_mutex_lock(&m_copy), "Error locking copy mutex");
+        CHECK(pthread_mutex_lock(&m_copy),
+              "Error locking copy mutex on main thread");
         while (!copied) {
             pthread_cond_wait(&c_copy, &m_copy);
         }
         copied = false;
-        CHECK(pthread_mutex_unlock(&m_copy), "Error unlocking copy mutex");
+        CHECK(pthread_mutex_unlock(&m_copy),
+              "Error unlocking copy mutex on main thread");
     }
 
     return EXIT_SUCCESS;
