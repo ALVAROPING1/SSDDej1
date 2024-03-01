@@ -2,9 +2,24 @@
 #include <stdio.h>
 
 #include "../common/claves.h"
+#include "tests.h"
+
+TEST(case1) {
+  return 0;
+}
+TEST(case2) {
+  ASSERT_EQ(1, 1);
+  double res[] = {1,2,3,4};
+  double res2[] = {1,4,3,4};
+  ASSERT_EQ_VEC(res, 4, res2, 4);
+  return 0;
+}
 
 int main(int argc, char *argv[])
 { 
+  case1();
+  case2();
+  case1();
   init();
   
   char pal[256];
