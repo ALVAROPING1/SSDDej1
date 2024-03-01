@@ -6,7 +6,7 @@
 #include "servidor_handler.h"
 
 /**
- * Executes a request
+ * @brief Executes a request
  *
  * @param req Request to execute
  * @param res Result of the execution of the request

@@ -4,14 +4,15 @@
 #include <stdio.h>
 
 /**
- * Formats an error message
+ * @brief Formats an error message
+ *
  * @param msg Error message
  * @return Formatted message
  */
 #define ERROR(msg) "\033[31;1m[ERROR]:\033[0m " msg "\n"
 
 /**
- * `CHECK()` macro with 3 parameters
+ * @brief `CHECK()` macro with 3 parameters
  */
 #define _CHECK3(expr, err_msg, err_val)                                        \
     ({                                                                         \
@@ -24,7 +25,7 @@
     })
 
 /**
- * `CHECK()` macro with 2 parameters
+ * @brief `CHECK()` macro with 2 parameters
  */
 #define _CHECK2(expr, err_msg)                                                 \
     if ((expr) != 0) {                                                         \
@@ -33,7 +34,7 @@
     }
 
 /**
- * `CHECK()` macro with a single parameter
+ * @brief `CHECK()` macro with a single parameter
  */
 #define _CHECK1(expr)                                                          \
     if ((expr) != 0) { return -1; }
@@ -42,9 +43,9 @@
 #define _GET_CHECK(_1, _2, _3, NAME, ...) NAME
 
 /**
- * Checks that the given expression didn't result in an error. Evaluates to its
- * value if there wasn't an error, and returns from the current function with -1
- * otherwise
+ * @brief Checks that the given expression didn't result in an error. Evaluates
+ * to its value if there wasn't an error, and returns from the current function
+ * with -1 otherwise
  *
  * @param expr Expression to evaluate
  * @param err_msg [Optional] Error message
@@ -56,8 +57,8 @@
     _GET_CHECK(__VA_ARGS__, _CHECK3, _CHECK2, _CHECK1)(__VA_ARGS__)
 
 /**
- * Asserts that a given expression is `true`, printing a formatted message to
- * `stderr` and returning from the current function otherwise
+ * @brief Asserts that a given expression is `true`, printing a formatted
+ * message to `stderr` and returning from the current function otherwise
  *
  * @param expr Expression to evaluate
  * @param err_msg Error message format string

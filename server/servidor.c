@@ -18,7 +18,7 @@ pthread_cond_t c_copy;
 bool copied = false;
 
 /**
- * Setup function for processing a request in a new thread
+ * @brief Setup function for processing a request in a new thread
  *
  * @param request Request to process. Should be a pointer to a `Request` struct
  * @return Error code of the processing of the request
@@ -50,7 +50,7 @@ pthread_attr_t t_attr;
     }
 
 /**
- * SIGINT Handler for closing the server
+ * @brief SIGINT Handler for closing the server
  */
 void siginthandler() {
     printf("\n\033[32;1m[SERVER CLOSED]\033[0m\n");
@@ -66,7 +66,7 @@ void siginthandler() {
 }
 
 /**
- * Server entry point
+ * @brief Server entry point
  *
  * @return Error code of the execution if there was an irrecoverable error
  */

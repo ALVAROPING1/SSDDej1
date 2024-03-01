@@ -4,7 +4,7 @@
 #include "../common/messages.h"
 
 /**
- * Handles a request
+ * @brief Handles a request
  *
  * @param request Request to process
  * @return Error code of the processing of the request

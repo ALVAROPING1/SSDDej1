@@ -11,7 +11,7 @@
 // ╚═══════════════════════════════════════════════════════════════════════════╝
 
 /**
- * Sends a request to the server and receives the result
+ * @brief Sends a request to the server and receives the result
  *
  * @param request Request to send
  * @param response Buffer in which the response should be stored
@@ -36,7 +36,7 @@ int send_message(const Request* request,
     if ((expr) == -1) { perror(err_msg); }
 
 /**
- * Makes a request to the server and receives the result
+ * @brief Makes a request to the server and receives the result
  *
  * @param request Request to send
  * @param response Buffer in which the response should be stored
