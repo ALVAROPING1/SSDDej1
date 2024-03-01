@@ -1,78 +1,96 @@
-#include <string.h>
-#include <stdio.h>
+#include <limits.h>
 
 #include "../common/claves.h"
 #include "tests.h"
 
-TEST(case1) {
-  return 0;
+TEST(init1) {
+    ASSERT_EQ(init(), 0);
+    double vec[32] = {1, 2, 3, 4};
+    ASSERT_EQ(set_value(0, "test", 4, vec), 0);
+    ASSERT_EQ(init(), 0);
+    char str[256];
+    int vec_size;
+    ASSERT_EQ(get_value(0, str, &vec_size, vec), -1);
+    return 0;
 }
-TEST(case2) {
-  ASSERT_EQ(1, 1);
-  double res[] = {1,2,3,4};
-  double res2[] = {1,4,3,4};
-  ASSERT_EQ_VEC(res, 4, res2, 4);
-  return 0;
+
+TEST(init2) {
+    ASSERT_EQ(init(), 0);
+    ASSERT_EQ(init(), 0);
+    return 0;
 }
 
-int main(int argc, char *argv[])
-{ 
-  case1();
-  case2();
-  case1();
-  init();
-  
-  char pal[256];
-  int n_v;
-  double vec_nums[32];
-  int res = get_value(0, pal, &n_v, vec_nums);
-  if (res == -1){
-    printf("Test Get_Value con servidor vacío de elementos: True.\n");
-  } else {
-    printf("Test Get_Value con servidor vacío de elementos: False.\n");
-  }
+TEST(set_key_values) {
+    ASSERT_EQ(init(), 0);
+    double vec[32] = {1, 2, 3, 4};
+    ASSERT_EQ(set_value(0, "test", 4, vec), 0);
+    ASSERT_EQ(set_value(-1, "test", 4, vec), 0);
+    ASSERT_EQ(set_value(INT_MAX, "test", 4, vec), 0);
+    ASSERT_EQ(set_value(INT_MIN, "test", 4, vec), 0);
+    return 0;
+}
 
-  char str[] = "hola!";
-  double vec[3] = {1,2,3};
-  int res2 = set_value(1, str, 3, vec);
+TEST(set_str_values) {
+    ASSERT_EQ(init(), 0);
+    double vec[32] = {1, 2, 3, 4};
+    ASSERT_EQ(set_value(0, "", 4, vec), 0);
+    ASSERT_EQ(set_value(1, "a", 4, vec), 0);
+    ASSERT_EQ(set_value(2, "aa", 4, vec), 0);
+    char str1[MAX_STR_SIZE] = {0};
+    memset(str1, 'a', sizeof(str1) - 1);
+    ASSERT_EQ(set_value(3, str1, 4, vec), 0);
+    char str2[MAX_STR_SIZE + 1] = {0};
+    memset(str2, 'a', sizeof(str2));
+    ASSERT_EQ(set_value(4, str2, 4, vec), -1);
+    return 0;
+}
 
-  if (exist(1) == 1 && res2 == 0){
-    printf("Test de inserción de un vector en servidor: True.\n");
-  } else {
-    printf("Test de inserción de un vector en servidor: False.\n");
-  }
+TEST(set_vec_values) {
+    ASSERT_EQ(init(), 0);
+    double vec[1024] = {1, 2, 3, 4};
+    ASSERT_EQ(set_value(0, "a", 0, vec), -1);
+    ASSERT_EQ(set_value(1, "a", 1, vec), 0);
+    ASSERT_EQ(set_value(2, "a", 2, vec), 0);
+    ASSERT_EQ(set_value(3, "a", 31, vec), 0);
+    ASSERT_EQ(set_value(4, "a", 32, vec), 0);
+    ASSERT_EQ(set_value(5, "a", 33, vec), -1);
+    ASSERT_EQ(set_value(8, "a", 1024, vec), -1);
+    // ASSERT_EQ(set_value(6, "a", -1, vec), -1); // Error de compilación
+    // ASSERT_EQ(set_value(7, "a", INT_MIN, vec), -1); // Error de compilación
+    return 0;
+}
 
-  char cad[256];
-  int n_value2;
-  double vec2[32];
-  int res3 = get_value(1, cad, &n_value2, vec2);
+TEST(set_get) {
+    ASSERT_EQ(init(), 0);
+    char str[256] = {'a', 0};
+    char str_res[256] = {'a', 0};
+    int vec_size = 4;
+    int vec_size_res = 4;
+    double vec[32] = {1, 2, 3, 4};
+    double vec_res[32] = {1, 2, 3, 4};
+    ASSERT_EQ(set_value(0, str, vec_size, vec), 0);
+    ASSERT_EQ(get_value(0, str, &vec_size_res, vec_res), 0);
+    ASSERT_EQ(str, str_res);
+    ASSERT_EQ_VEC(vec, vec_size, vec_res, vec_size_res);
+    return 0;
+}
 
-  if (
-      res3 != -1 &&
-      strcmp(cad, str) == 0 &&
-      n_value2 == 3 &&
-      vec2[0] == vec[0] &&
-      vec2[1] == vec[1] &&
-      vec2[2] == vec[2]
-    ){
-    printf("Test de obtención de un vector existente: True.\n");
-  }
-  else printf("Test de obtención de un vector existente: False.\n");
+TEST(set_many_elements) {
+    double vec[4] = {1, 2, 3, 4};
+    ASSERT_EQ(init(), 0);
+    for (int i = 0; i < 1024; ++i) {
+        ASSERT_EQ(set_value(i, "test", 4, vec), 0);
+    }
+    return 0;
+}
 
-  int res4 = exist(1);
-  if (res4 == 1){
-    printf("Test de existencia sobre elemento existente: True.\n");
-  } else {
-    printf("Test de existencia sobre elemento existente: False.\n");
-  }
-
-  int res5 = delete_key(1);
-  
-  if (res5 == 0 && exist(1) == 0){
-    printf("Test de eliminación y existencia de un elemento existente: True.\n");
-  } else {
-    printf("Test de eliminación y existencia de un elemento existente: False.\n");
-  }
-
-  return 0;
+int main() {
+    init1();
+    init2();
+    set_key_values();
+    set_str_values();
+    set_vec_values();
+    set_many_elements();
+    set_get();
+    return 0;
 }

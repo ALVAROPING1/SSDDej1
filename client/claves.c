@@ -1,4 +1,5 @@
 #include <mqueue.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -108,6 +109,11 @@ int set_value(const int key,
               const char string[],
               const int vec_size,
               const double vec[vec_size]) {
+    ASSERT(vec_size >= 1 && vec_size <= MAX_VEC_SIZE,
+           "Invalid vector size %d",
+           vec_size);
+    int str_size = strlen(string);
+    ASSERT(str_size <= MAX_STR_SIZE - 1, "Invalid string size %d", str_size)
     Request request = {.op_code = Set, .key = key, .vec_size = vec_size};
     Response response;
     strcpy(request.str, string);
@@ -119,6 +125,11 @@ int modify_value(const int key,
                  const char string[],
                  const int vec_size,
                  const double vec[vec_size]) {
+    ASSERT(vec_size >= 1 && vec_size <= MAX_VEC_SIZE,
+           "Invalid vector size %d",
+           vec_size);
+    int str_size = strlen(string);
+    ASSERT(str_size <= MAX_STR_SIZE - 1, "Invalid string size %d", str_size)
     Request request = {.op_code = Modify, .key = key, .vec_size = vec_size};
     Response response;
     strcpy(request.str, string);
