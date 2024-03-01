@@ -16,7 +16,7 @@
  */
 #define _CHECK3(expr, err_msg, err_val)                                        \
     ({                                                                         \
-        __auto_type res = expr;                                                \
+        typeof(expr) res = expr;                                               \
         if (res == err_val) {                                                  \
             perror(err_msg);                                                   \
             return -1;                                                         \
