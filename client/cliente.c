@@ -100,28 +100,31 @@ TEST(get_empty) {
 }
 
 TEST(get_many_elements) {
-    double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
-
-    double vecs_res[MAX_ELEMENTS][MAX_VEC_SIZE];
     char strs[MAX_ELEMENTS][MAX_STR_SIZE];
+    double vecs[MAX_ELEMENTS][MAX_VEC_SIZE];
+
+    char strs_res[MAX_ELEMENTS][MAX_STR_SIZE];
+    double vecs_res[MAX_ELEMENTS][MAX_VEC_SIZE];
     int n_vecs[MAX_ELEMENTS];
 
     ASSERT_EQ(init(), 0);
 
     // Insertion of 1024 elements.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
-        ASSERT_EQ(set_value(i, "test", 4, vec), 0);
+        snprintf(strs[i], sizeof(strs[i]), "test content: %d", i);
+        vecs[i][0] = i;
+        ASSERT_EQ(set_value(i, strs[i], 1, vecs[i]), 0);
     }
 
     // Get the vectors correctly.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
-        ASSERT_EQ(get_value(i, strs[i], n_vecs + i, vecs_res[i]), 0);
+        ASSERT_EQ(get_value(i, strs_res[i], &n_vecs[i], vecs_res[i]), 0);
     }
 
     // Check the values are stored correctly.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
-        ASSERT_EQ_VEC(vecs_res[i], n_vecs[i], vec, 4);
-        ASSERT_EQ(strs[i], "test");
+        ASSERT_EQ_VEC(vecs_res[i], n_vecs[i], vecs[i], 1);
+        ASSERT_EQ(strs_res[i], strs[i]);
     }
 
     return 0;
@@ -177,12 +180,11 @@ TEST(delete_none) {
 }
 
 TEST(delete_element) {
-    ASSERT_EQ(init(), 0);
-
     double vec[MAX_VEC_SIZE] = {3, 2, 4, 5};
     char str[MAX_STR_SIZE] = "exist_test";
     int n_value = 4;
 
+    ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, str, n_value, vec), 0);
     ASSERT_EQ(exist(0), 1);
     ASSERT_EQ(delete_key(0), 0);
