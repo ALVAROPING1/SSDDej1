@@ -17,7 +17,7 @@ $(NAME_LIB): client/claves.c
 cliente: client/cliente.o client/tests.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
-servidor: server/linked_list.o server/servidor_handler.o server/servidor.o
+servidor: server/servidor_claves.o server/servidor_handler.o server/servidor.o
 	$(CC) $(CFLAGS) -lpthread -o $@ $^
 
 clean:

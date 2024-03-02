@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include "../common/error_handling.h"
-#include "servidor_claves.h"
 #include "servidor_handler.h"
 
 // Copy request mutex
@@ -55,7 +54,6 @@ pthread_attr_t t_attr;
 void siginthandler() {
     printf("\n\033[32;1m[SERVER CLOSED]\033[0m\n");
     // Cerrar las estructuras de datos.
-    destroy();
     bool error = false;
     TRY(mq_close(queue), "Error closing requests message queue");
     TRY(pthread_attr_destroy(&t_attr),
