@@ -44,21 +44,20 @@
 
 /**
  * @brief Checks that the given expression didn't result in an error. Evaluates
- * to its value if there wasn't an error, and returns from the current function
- * with -1 otherwise
+ * to its value if there wasn't an error, and returns -1 from the current
+ * function otherwise
  *
  * @param expr Expression to evaluate
  * @param err_msg [Optional] Error message
  * @param err_val [Optional] Error value to check for. If unspecified, any non 0
- *      value is considered an error
- * @param ... Format values
+ *      value is considered to be an error
  */
 #define CHECK(...)                                                             \
     _GET_CHECK(__VA_ARGS__, _CHECK3, _CHECK2, _CHECK1)(__VA_ARGS__)
 
 /**
  * @brief Asserts that a given expression is `true`, printing a formatted
- * message to `stderr` and returning from the current function otherwise
+ * message to `stderr` and returning -1 from the current function otherwise
  *
  * @param expr Expression to evaluate
  * @param err_msg Error message format string

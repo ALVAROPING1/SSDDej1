@@ -29,6 +29,8 @@ const int PATH_SIZE = 32;
  *
  * @param fpath Path to remove
  * @return Error code
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int unlink_cb(const char* fpath,
               const struct stat* sb,
@@ -41,6 +43,8 @@ int unlink_cb(const char* fpath,
  * @brief Removes a directory and all of its contents
  *
  * @return Error code
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int remove_dir() {
     int ret = nftw(DATA_PATH, unlink_cb, 4, FTW_DEPTH | FTW_PHYS);
@@ -95,6 +99,8 @@ FILE* get_file(const int key, const file_mode mode) {
  * @param vec Vector value
  * @param mode Mode in which the contents should be written (`New` or `Update`)
  * @return Error code
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int write_file(const int key,
                const char str[],

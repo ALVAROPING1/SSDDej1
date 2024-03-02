@@ -21,6 +21,8 @@ bool copied = false;
  *
  * @param request Request to process. Should be a pointer to a `Request` struct
  * @return Error code of the processing of the request
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 void* setup_request(void* request) {
     Request req;
@@ -67,6 +69,8 @@ void siginthandler() {
  * @brief Server entry point
  *
  * @return Error code of the execution if there was an irrecoverable error
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int main() {
     // Inicializar mutex de copia y condition

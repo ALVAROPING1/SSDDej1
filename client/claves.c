@@ -18,7 +18,9 @@
  * @param response Buffer in which the response should be stored
  * @param q_server Server message queue
  * @param q_res Response message queue
- * @return Error code
+ * @return Error code of the communication
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int send_message(const Request* request,
                  Response* response,
@@ -41,7 +43,9 @@ int send_message(const Request* request,
  *
  * @param request Request to send
  * @param response Buffer in which the response should be stored
- * @return Error code
+ * @return Error code of the request
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int make_request(Request* request, Response* response) {
     snprintf(request->q_name, sizeof(request->q_name), "/CLIENT_%d", getpid());

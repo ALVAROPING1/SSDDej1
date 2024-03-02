@@ -11,6 +11,8 @@
  * @param req Request to execute
  * @param res Result of the execution of the request
  * @return Error code generated during the execution of the request
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int execute_request(const Request* req, Response* res) {
     // no es zona crítica ya que las operaciones se realizan de forma atómica
