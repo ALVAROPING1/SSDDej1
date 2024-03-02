@@ -5,18 +5,17 @@
 
 #define MAX_ELEMENTS 1024
 
-TEST(init1) {
+TEST(init_clear) {
     ASSERT_EQ(init(), 0);
     double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
     ASSERT_EQ(set_value(0, "test", 4, vec), 0);
+    ASSERT_EQ(exist(0), 1);
     ASSERT_EQ(init(), 0);
-    char str[MAX_STR_SIZE];
-    int vec_size;
-    ASSERT_EQ(get_value(0, str, &vec_size, vec), -1);
+    ASSERT_EQ(exist(0), 0);
     return 0;
 }
 
-TEST(init2) {
+TEST(init_multiple) {
     ASSERT_EQ(init(), 0);
     ASSERT_EQ(init(), 0);
     return 0;
@@ -38,11 +37,13 @@ TEST(set_str_values) {
     ASSERT_EQ(set_value(0, "", 4, vec), 0);
     ASSERT_EQ(set_value(1, "a", 4, vec), 0);
     ASSERT_EQ(set_value(2, "aa", 4, vec), 0);
+
     char str1[MAX_STR_SIZE] = {0};
     memset(str1, 'a', sizeof(str1) - 1);
     ASSERT_EQ(set_value(3, str1, 4, vec), 0);
+
     char str2[MAX_STR_SIZE + 1] = {0};
-    memset(str2, 'a', sizeof(str2));
+    memset(str2, 'a', sizeof(str2) - 1);
     ASSERT_EQ(set_value(4, str2, 4, vec), -1);
     return 0;
 }
@@ -64,16 +65,17 @@ TEST(set_vec_values) {
 
 TEST(set_get) {
     ASSERT_EQ(init(), 0);
-    char str[MAX_STR_SIZE] = {'a', 0};
-    char str_res[MAX_STR_SIZE] = {'a', 0};
-    int vec_size = 4;
-    int vec_size_res = 4;
+    char str[MAX_STR_SIZE] = "test content";
     double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
-    double vec_res[MAX_VEC_SIZE] = {1, 2, 3, 4};
-    ASSERT_EQ(set_value(0, str, vec_size, vec), 0);
-    ASSERT_EQ(get_value(0, str, &vec_size_res, vec_res), 0);
+
+    char str_res[MAX_STR_SIZE];
+    int vec_size_res;
+    double vec_res[MAX_VEC_SIZE];
+
+    ASSERT_EQ(set_value(0, str, 4, vec), 0);
+    ASSERT_EQ(get_value(0, str_res, &vec_size_res, vec_res), 0);
     ASSERT_EQ(str, str_res);
-    ASSERT_EQ_VEC(vec, vec_size, vec_res, vec_size_res);
+    ASSERT_EQ_VEC(vec_res, vec_size_res, vec, 4);
     return 0;
 }
 
@@ -106,7 +108,7 @@ TEST(get_many_elements){
 
     ASSERT_EQ(init(), 0);
 
-    // Insetion of 1024 elements.
+    // Insertion of 1024 elements.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
         ASSERT_EQ(set_value(i, "test", 4, vec), 0);
     }
@@ -118,9 +120,8 @@ TEST(get_many_elements){
 
     // Check the values are stored correctly.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
-      ASSERT_EQ_VEC(vecs_res[i], 4, vec, 4);
+      ASSERT_EQ_VEC(vecs_res[i], n_vecs[i], vec, 4);
       ASSERT_EQ(strs[i], "test");
-      ASSERT_EQ(n_vecs[i], 4);
     }
     
     return 0;
@@ -128,17 +129,16 @@ TEST(get_many_elements){
 
 TEST(modify_none){
     double vec[MAX_VEC_SIZE] = {1,2,3,4};
-    char str[MAX_STR_SIZE] = "hola";
     
     ASSERT_EQ(init(), 0);
-    ASSERT_EQ(modify_value(5,str,4,vec), -1);
+    ASSERT_EQ(modify_value(5,"test",4,vec), -1);
     return 0;
 }
 
 TEST(modify_element){
     double vec[MAX_VEC_SIZE] = {3,2,4,5};
     char str[MAX_STR_SIZE] = "modify_test";
-    int n_value = 4;
+    int n_value;
     
     ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, str, 4, vec), 0);
@@ -150,9 +150,8 @@ TEST(modify_element){
 
     ASSERT_EQ(get_value(0,str,&n_value,vec), 0);
 
-    ASSERT_EQ_VEC(vec, 4, vec2, 4);
+    ASSERT_EQ_VEC(vec, n_value, vec2, 4);
     ASSERT_EQ(str, str2);
-    ASSERT_EQ(n_value, 4);
   
   return 0;
 }
@@ -194,6 +193,7 @@ TEST(delete_element){
     int n_value = 4;
     
     ASSERT_EQ(set_value(0, str, n_value, vec), 0);
+    ASSERT_EQ(exist(0), 1);
     ASSERT_EQ(delete_key(0), 0);
     ASSERT_EQ(exist(0), 0);
 
@@ -201,8 +201,8 @@ TEST(delete_element){
 }
 
 int main() {
-    init1();
-    init2();
+    init_clear();
+    init_multiple();
     set_key_values();
     set_str_values();
     set_vec_values();
