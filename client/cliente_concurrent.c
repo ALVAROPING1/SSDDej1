@@ -18,7 +18,9 @@ void run_test(pid_t pids[PROCESSES], int results[PROCESSES], int (*func)()) {
         }
     }
     for (int i = 0; i < PROCESSES; ++i) {
-        waitpid(pids[i], &results[i], 0);
+        int status;
+        waitpid(pids[i], &status, 0);
+        results[i] = WEXITSTATUS(status);
     }
 }
 
@@ -32,6 +34,70 @@ int concurrent_test(int (*func)()) {
     }
     // Clear files
     ASSERT_EQ(init(), 0);
+    return 0;
+}
+
+int exclusive_concurrent_test(int (*func)(), pid_t* executed_pid) {
+    pid_t pids[PROCESSES];
+    int results[PROCESSES];
+    run_test(pids, results, func);
+
+    int successful = 0;
+    for (int i = 0; i < PROCESSES; ++i) {
+        if (results[i] != 0) {
+            // Add 256 because the status is stored as an unsigned byte
+            ASSERT_EQ(results[i], -1 + 256);
+            continue;
+        }
+        successful++;
+        *executed_pid = pids[i];
+    }
+    ASSERT_EQ(successful, 1);
+    return 0;
+}
+
+void gen_test_data(pid_t pid,
+                   char str[MAX_STR_SIZE],
+                   double vec[MAX_VEC_SIZE]) {
+    for (int i = 0; i < MAX_STR_SIZE - 1; ++i) {
+        // Writes all odd byte codes. This ensures that the NULL terminating
+        // character isn't written and thus the length is always `MAX_STR_SIZE`
+        str[i] = ((pid + i) * 2 + 1) % 256;
+    }
+    str[MAX_STR_SIZE - 1] = '\0';
+    // Initializes the vector to the pid followed by unique numbers for each
+    // process calculated from its pid
+    vec[0] = pid;
+    for (int i = 1; i < MAX_VEC_SIZE; ++i) {
+        // Writes consecutive numbers from the reserved number space
+        vec[i] = pid * MAX_VEC_SIZE + i;
+    }
+}
+
+int set_multiple() {
+    pid_t pid = getpid();
+    char str[MAX_STR_SIZE];
+    double vec[MAX_VEC_SIZE];
+    gen_test_data(pid, str, vec);
+    return set_value(0, str, 1, vec);
+}
+
+TEST(set_concurrent) {
+    ASSERT_EQ(init(), 0);
+    pid_t pid;
+    ASSERT_EQ(exclusive_concurrent_test(set_multiple, &pid), 0);
+
+    char str[MAX_STR_SIZE];
+    double vec[MAX_VEC_SIZE] = {0};
+
+    char str_res[MAX_STR_SIZE];
+    double vec_res[MAX_VEC_SIZE];
+    int n_res;
+
+    gen_test_data(pid, str, vec);
+    ASSERT_EQ(get_value(0, str_res, &n_res, vec_res), 0);
+    ASSERT_EQ(str_res, str);
+    ASSERT_EQ_VEC(vec_res, n_res, vec, 1);
     return 0;
 }
 
@@ -79,19 +145,7 @@ int modify_element() {
     char str[MAX_STR_SIZE];
     double vec[MAX_VEC_SIZE];
     pid_t pid = getpid();
-    for (int i = 0; i < MAX_STR_SIZE - 1; ++i) {
-        // Writes all odd byte codes. This ensures that the NULL terminating
-        // character isn't written and thus the length is always `MAX_STR_SIZE`
-        str[i] = ((pid + i) * 2 + 1) % 256;
-    }
-    str[MAX_STR_SIZE - 1] = '\0';
-    // Initializes the vector to the pid followed by unique numbers for each
-    // process calculated from its pid
-    vec[0] = pid;
-    for (int i = 1; i < MAX_VEC_SIZE; ++i) {
-        // Writes consecutive numbers from the reserved number space
-        vec[i] = pid * MAX_VEC_SIZE + i;
-    }
+    gen_test_data(pid, str, vec);
     ASSERT_EQ(modify_value(0, str, 32, vec), 0);
     printf("Process %d: value modified\n", pid);
 
@@ -103,19 +157,11 @@ int modify_element() {
     while (get_value(0, str_res, &vec_size_res, vec_res) != 0) {}
     printf("Process %d: value gotten\n", pid);
 
-    // Generates the correct data that should be stored according to the first
-    // value (since they should follow a pattern). We can't just compare with
-    // the data we written because it might have been overwritten by a different
-    // concurrent process, so we must validate the integrity of the data gotten
-    // by checking that it follows the correct pattern
-    for (int i = 0; i < MAX_STR_SIZE - 1; ++i) {
-        str[i] = (str_res[0] + 2 * i) % 256;
-    }
-    str_res[MAX_STR_SIZE - 1] = '\0';
-    vec[0] = vec_res[0];
-    for (int i = 1; i < MAX_VEC_SIZE; ++i) {
-        vec[i] = vec[0] * MAX_VEC_SIZE + i;
-    }
+    // We can't just compare with the data we written because it might have been
+    // overwritten by a different concurrent process, so we must validate the
+    // integrity of the data gotten by checking that it follows the correct
+    // pattern
+    gen_test_data(vec_res[0], str, vec);
     ASSERT_EQ(str_res, str);
     ASSERT_EQ_VEC(vec_res, vec_size_res, vec, 32);
     return 0;
@@ -123,17 +169,34 @@ int modify_element() {
 
 TEST(modify_concurrent) {
     double vec[MAX_VEC_SIZE] = {1};
-    char str[MAX_STR_SIZE] = "empty";
 
     ASSERT_EQ(init(), 0);
-    ASSERT_EQ(set_value(0, str, 1, vec), 0);
+    ASSERT_EQ(set_value(0, "empty", 1, vec), 0);
     ASSERT_EQ(concurrent_test(modify_element), 0);
+    return 0;
+}
+
+int delete_multiple() {
+    return delete_key(0);
+}
+
+TEST(delete_concurrent) {
+    double vec[MAX_VEC_SIZE] = {1};
+
+    ASSERT_EQ(init(), 0);
+    ASSERT_EQ(set_value(0, "empty", 1, vec), 0);
+
+    pid_t pid;
+    ASSERT_EQ(exclusive_concurrent_test(delete_multiple, &pid), 0);
+    ASSERT_EQ(exist(0), 0);
     return 0;
 }
 
 int main() {
     CHECK(init());
+    set_concurrent();
     set_get_concurrent();
     modify_concurrent();
+    delete_concurrent();
     return 0;
 }
