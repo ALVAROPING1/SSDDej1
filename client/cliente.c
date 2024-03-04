@@ -1,6 +1,7 @@
 #include <limits.h>
 
 #include "../common/claves.h"
+#include "../common/error_handling.h"
 #include "tests.h"
 
 #define MAX_ELEMENTS 1024
@@ -194,6 +195,7 @@ TEST(delete_element) {
 }
 
 int main() {
+    CHECK(init());
     init_clear();
     init_multiple();
     set_key_values();

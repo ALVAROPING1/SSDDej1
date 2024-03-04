@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "../common/claves.h"
+#include "../common/error_handling.h"
 #include "tests.h"
 
 #define MAX_ELEMENTS 1024
@@ -130,6 +131,7 @@ TEST(modify_concurrent) {
 }
 
 int main() {
+    CHECK(init());
     set_get_concurrent();
     modify_concurrent();
     return 0;
