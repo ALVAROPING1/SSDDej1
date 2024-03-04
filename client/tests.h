@@ -38,6 +38,7 @@
         __auto_type _e = expected;                                             \
         if (_Generic(_v, int: intcmp, char*: strcmp)(_v, _e)) {                \
             printf(ERROR("ASSERTION_ERROR", "\n"));                            \
+            printf("Input:    " #value "\n");                                  \
             printf("Value:    ");                                              \
             printf(_FMT(_v), _v);                                              \
             printf("Expected: ");                                              \
@@ -56,6 +57,7 @@
         int _v_s = value_size, _e_s = expected_size;                           \
         if (_v_s != _e_s || memcmp(_v, _e, sizeof(double) * _e_s)) {           \
             printf(ERROR("ASSERTION_ERROR", "\n"));                            \
+            printf("Input:    " #value "\n");                                  \
             printf("Value:    ");                                              \
             print_vec(_v_s, _v);                                               \
             printf("Expected: ");                                              \
