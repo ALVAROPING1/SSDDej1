@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "../common/claves.h"
-#include "../common/error_handling.h"
 #include "tests.h"
 
 #define MAX_ELEMENTS 1024

@@ -4,12 +4,24 @@
 #include <stdio.h>
 
 /**
+ * @brief Wrapper for the `_STR()` macro. Required so that the input macro is
+ * expanded before being converted to a string
+ */
+#define _STR_WRAPPER(x) #x
+/**
+ * @brief Converts a macro constant to a string
+ */
+#define _STR(x) _STR_WRAPPER(x)
+
+/**
  * @brief Formats an error message
  *
+ * @param err Error type
  * @param msg Error message
  * @return Formatted message
  */
-#define ERROR(msg) "\033[31;1m[ERROR]:\033[0m " msg "\n"
+#define ERROR(err, msg)                                                        \
+    "\033[31;1m[" err "]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
 
 /**
  * @brief `CHECK()` macro with 3 parameters
@@ -18,7 +30,7 @@
     ({                                                                         \
         typeof(expr) res = expr;                                               \
         if (res == err_val) {                                                  \
-            perror(err_msg);                                                   \
+            perror(ERROR("ERROR", err_msg));                                   \
             return -1;                                                         \
         }                                                                      \
         res;                                                                   \
@@ -29,7 +41,7 @@
  */
 #define _CHECK2(expr, err_msg)                                                 \
     if ((expr) != 0) {                                                         \
-        perror(err_msg);                                                       \
+        perror(ERROR("ERROR", err_msg));                                       \
         return -1;                                                             \
     }
 
@@ -65,7 +77,7 @@
  */
 #define ASSERT(expr, err_msg, ...)                                             \
     if (!(expr)) {                                                             \
-        fprintf(stderr, ERROR(err_msg), ##__VA_ARGS__);                        \
+        fprintf(stderr, ERROR("ERROR", err_msg "\n"), ##__VA_ARGS__);          \
         return -1;                                                             \
     }
 

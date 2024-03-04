@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../common/error_handling.h"
+
 /**
  * @brief Generates a new test case function. Should be followed by its code
  * block
@@ -13,8 +15,8 @@
 #define TEST(name)                                                             \
     int test_##name();                                                         \
     void name() {                                                              \
-        printf(test_##name() == 0 ? "\033[32;1m[SUCCESS]"                      \
-                                  : "\033[31;1m[FAILURE]");                    \
+        printf(test_##name() == 0 ? "\033[32;1m[SUCCESS]:"                     \
+                                  : "\033[31;1m[FAILURE]:");                   \
         printf("\033[0m " #name "\n");                                         \
     }                                                                          \
     int test_##name()
@@ -27,13 +29,6 @@
 #define _FMT(x) _Generic(x, int: "%d\n", char*: "%s\n")
 
 /**
- * @brief Prints an assertion error with the corresponding file/line in which it
- * happened
- */
-#define ASSERTION_ERROR                                                        \
-    printf("\033[31;1m[ASSERTION ERROR]\033[0m " __FILE__ ":%d\n", __LINE__);
-
-/**
  * @brief Asserts that the given value has the expected value, and ends the test
  * if it doesn't. Only supports comparing `int`s and `string`s
  */
@@ -42,7 +37,7 @@
         __auto_type v = value;                                                 \
         __auto_type e = expected;                                              \
         if (_Generic(v, int: intcmp, char*: strcmp)(v, e)) {                   \
-            ASSERTION_ERROR;                                                   \
+            printf(ERROR("ASSERTION_ERROR", "\n"));                            \
             printf("Value:    ");                                              \
             printf(_FMT(v), v);                                                \
             printf("Expected: ");                                              \
@@ -60,7 +55,7 @@
         double *v = value, *e = expected;                                      \
         int v_s = value_size, e_s = expected_size;                             \
         if (v_s != e_s || memcmp(v, e, sizeof(double) * e_s)) {                \
-            ASSERTION_ERROR;                                                   \
+            printf(ERROR("ASSERTION_ERROR", "\n"));                            \
             printf("Value:    ");                                              \
             print_vec(v_s, v);                                                 \
             printf("Expected: ");                                              \

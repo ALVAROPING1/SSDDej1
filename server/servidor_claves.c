@@ -162,13 +162,13 @@ int get_value(const int key,
         CHECK(get_file(key, Read), "Error opening data file for reading", NULL);
     int i = 0;
     do {
-        CHECK(fread(&str[i], sizeof(*str), 1, file) != 1,
-              "Error reading string");
+        ASSERT(fread(&str[i], sizeof(*str), 1, file) == 1,
+               "Error reading string");
     } while (str[i++] != '\0');
-    CHECK(fread(vec_size, sizeof(*vec_size), 1, file) != 1,
-          "Error reading vector size");
-    CHECK(fread(v, sizeof(*v), *vec_size, file) != *vec_size,
-          "Error reading vector");
+    ASSERT(fread(vec_size, sizeof(*vec_size), 1, file) == 1,
+           "Error reading vector size");
+    ASSERT(fread(v, sizeof(*v), *vec_size, file) == *vec_size,
+           "Error reading vector");
     CHECK(fclose(file), "Error closing file after reading");
 
     return 0;
