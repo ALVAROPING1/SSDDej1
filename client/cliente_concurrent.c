@@ -9,8 +9,7 @@
 #define MAX_ELEMENTS 1024
 #define PROCESSES 16
 
-int concurrent_test(int (*func)()) {
-    pid_t pids[PROCESSES];
+void run_test(pid_t pids[PROCESSES], int results[PROCESSES], int (*func)()) {
     for (int i = 0; i < PROCESSES; ++i) {
         pids[i] = fork();
         if (0 == pids[i]) {
@@ -18,11 +17,15 @@ int concurrent_test(int (*func)()) {
             exit(func());
         }
     }
-    // Wait for all tests
-    int results[PROCESSES];
     for (int i = 0; i < PROCESSES; ++i) {
         waitpid(pids[i], &results[i], 0);
     }
+}
+
+int concurrent_test(int (*func)()) {
+    pid_t pids[PROCESSES];
+    int results[PROCESSES];
+    run_test(pids, results, func);
     // Check that there weren't any errors
     for (int i = 0; i < PROCESSES; ++i) {
         ASSERT_EQ(results[i], 0);
@@ -38,7 +41,7 @@ int get_many_elements() {
 
     char strs_res[MAX_ELEMENTS][MAX_STR_SIZE];
     double vecs_res[MAX_ELEMENTS][MAX_VEC_SIZE];
-    int n_vecs[MAX_ELEMENTS];
+    int n_res[MAX_ELEMENTS];
 
     pid_t pid = getpid();
     int start = pid * MAX_ELEMENTS;
@@ -53,15 +56,14 @@ int get_many_elements() {
 
     // Get the vectors correctly.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
-        ASSERT_EQ(get_value(start + i, strs_res[i], &n_vecs[i], vecs_res[i]),
-                  0);
+        ASSERT_EQ(get_value(start + i, strs_res[i], &n_res[i], vecs_res[i]), 0);
     }
     printf("Process %d: all values gotten\n", pid);
 
     // Check the values are stored correctly.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
-        ASSERT_EQ_VEC(vecs_res[i], n_vecs[i], vecs[i], 1);
         ASSERT_EQ(strs_res[i], strs[i]);
+        ASSERT_EQ_VEC(vecs_res[i], n_res[i], vecs[i], 1);
     }
 
     return 0;
