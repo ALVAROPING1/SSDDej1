@@ -28,12 +28,12 @@
  */
 #define _CHECK3(expr, err_msg, err_val)                                        \
     ({                                                                         \
-        typeof(expr) res = expr;                                               \
-        if (res == err_val) {                                                  \
+        typeof(expr) _res = expr;                                              \
+        if (_res == err_val) {                                                 \
             perror(ERROR("ERROR", err_msg));                                   \
             return -1;                                                         \
         }                                                                      \
-        res;                                                                   \
+        _res;                                                                  \
     })
 
 /**

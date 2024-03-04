@@ -34,14 +34,14 @@
  */
 #define ASSERT_EQ(value, expected)                                             \
     {                                                                          \
-        __auto_type v = value;                                                 \
-        __auto_type e = expected;                                              \
-        if (_Generic(v, int: intcmp, char*: strcmp)(v, e)) {                   \
+        __auto_type _v = value;                                                \
+        __auto_type _e = expected;                                             \
+        if (_Generic(_v, int: intcmp, char*: strcmp)(_v, _e)) {                \
             printf(ERROR("ASSERTION_ERROR", "\n"));                            \
             printf("Value:    ");                                              \
-            printf(_FMT(v), v);                                                \
+            printf(_FMT(_v), _v);                                              \
             printf("Expected: ");                                              \
-            printf(_FMT(e), e);                                                \
+            printf(_FMT(_e), _e);                                              \
             return -1;                                                         \
         }                                                                      \
     }
@@ -52,14 +52,14 @@
  */
 #define ASSERT_EQ_VEC(value, value_size, expected, expected_size)              \
     {                                                                          \
-        double *v = value, *e = expected;                                      \
-        int v_s = value_size, e_s = expected_size;                             \
-        if (v_s != e_s || memcmp(v, e, sizeof(double) * e_s)) {                \
+        double *_v = value, *_e = expected;                                    \
+        int _v_s = value_size, _e_s = expected_size;                           \
+        if (_v_s != _e_s || memcmp(_v, _e, sizeof(double) * _e_s)) {           \
             printf(ERROR("ASSERTION_ERROR", "\n"));                            \
             printf("Value:    ");                                              \
-            print_vec(v_s, v);                                                 \
+            print_vec(_v_s, _v);                                               \
             printf("Expected: ");                                              \
-            print_vec(e_s, e);                                                 \
+            print_vec(_e_s, _e);                                               \
             return -1;                                                         \
         }                                                                      \
     }
