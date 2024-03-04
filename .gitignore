@@ -3,4 +3,4 @@ libclaves.so
 /cliente
 /cliente_concurrent
 /servidor
-
+*.pdf

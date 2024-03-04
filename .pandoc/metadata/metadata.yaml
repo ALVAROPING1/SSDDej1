@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=./metadata.yaml
+date: \today
+
+lang: es
+documentclass: article
+geometry: "top=2.54cm, bottom=2.54cm, left=2.54cm, right=2.54cm, footskip=0.76cm, includefoot"
+
+toc: true
+toc-depth: 3
+
+bibliography: bibliography.bib
+
+header-includes: |
+    ```{=latex}
+    %%%%% Formatting %%%%%
+
+    %\parindent=1.5em
+    \parskip=1em
+
+    % Package to include graphics
+    \usepackage{mathtools}
+    % Text color
+    \definecolor{azulUC3M}{RGB}{0,0,102}
+
+    \makeatletter
+    % Title page command
+    \renewcommand{\maketitle}{
+        \begin{titlepage}
+            \begin{sffamily}
+                \color{azulUC3M}
+                \begin{center}
+                    \begin{figure}[h]
+                        \makebox[\textwidth][c]{
+                            \includegraphics[width=16cm]{.pandoc/logo_UC3M.png}
+                        }
+                    \end{figure}
+                    \vspace{2.5cm}
+                    \begin{Large}
+                        Grado en Ingeniería Informática \\
+                        \@date \\
+                        \vspace{2cm}
+                        \textsl{\@subtitle} \\
+                        \bigskip
+                    \end{Large}
+                    \Huge{\@title}\\
+                    \vspace*{0.5cm}
+                    \rule{10.5cm}{0.1cm}\\
+                    \vspace*{0.9cm}
+                    \LARGE\@author \\
+                    \vspace*{1cm}
+                \end{center}
+                \vfill
+            \end{sffamily}
+        \end{titlepage}
+    }
+
+    % Create subtitle command
+    \newcommand\subtitle[1]{\renewcommand\@subtitle{#1}}
+    \newcommand\@subtitle{\@latex@error{No \noexpand\subtitle given}\@ehc}
+    \makeatother
+    ```

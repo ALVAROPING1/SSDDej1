@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=./pandoc_options.yaml
+standalone: true
+strip-comments: true
+number-sections: true
+
+pdf-engine: lualatex
+metadata-file: metadata.yaml
