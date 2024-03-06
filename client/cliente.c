@@ -6,8 +6,8 @@
 #define MAX_ELEMENTS 1024
 
 TEST(init_clear) {
-    ASSERT_EQ(init(), 0);
     double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
+    ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, "test", 4, vec), 0);
     ASSERT_EQ(exist(0), 1);
     ASSERT_EQ(init(), 0);
@@ -21,9 +21,17 @@ TEST(init_multiple) {
     return 0;
 }
 
-TEST(set_key_values) {
-    ASSERT_EQ(init(), 0);
+TEST(set_multiple) {
     double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
+    ASSERT_EQ(init(), 0);
+    ASSERT_EQ(set_value(0, "test", 4, vec), 0);
+    ASSERT_EQ(set_value(0, "modified", 1, vec), -1);
+    return 0;
+}
+
+TEST(set_key_values) {
+    double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
+    ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, "test", 4, vec), 0);
     ASSERT_EQ(set_value(-1, "test", 4, vec), 0);
     ASSERT_EQ(set_value(INT_MAX, "test", 4, vec), 0);
@@ -32,8 +40,8 @@ TEST(set_key_values) {
 }
 
 TEST(set_str_values) {
-    ASSERT_EQ(init(), 0);
     double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
+    ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, "", 4, vec), 0);
     ASSERT_EQ(set_value(1, "a", 4, vec), 0);
     ASSERT_EQ(set_value(2, "aa", 4, vec), 0);
@@ -49,8 +57,8 @@ TEST(set_str_values) {
 }
 
 TEST(set_vec_values) {
-    ASSERT_EQ(init(), 0);
     double vec[MAX_ELEMENTS] = {1, 2, 3, 4};
+    ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, "a", 0, vec), -1);
     ASSERT_EQ(set_value(1, "a", 1, vec), 0);
     ASSERT_EQ(set_value(2, "a", 2, vec), 0);
@@ -64,7 +72,6 @@ TEST(set_vec_values) {
 }
 
 TEST(set_get) {
-    ASSERT_EQ(init(), 0);
     char str[MAX_STR_SIZE] = "test content";
     double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
 
@@ -72,6 +79,7 @@ TEST(set_get) {
     int vec_size_res;
     double vec_res[MAX_VEC_SIZE];
 
+    ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, str, 4, vec), 0);
     ASSERT_EQ(get_value(0, str_res, &vec_size_res, vec_res), 0);
     ASSERT_EQ(str, str_res);
@@ -190,6 +198,15 @@ TEST(delete_element) {
     ASSERT_EQ(delete_key(0), 0);
     ASSERT_EQ(exist(0), 0);
 
+    return 0;
+}
+
+TEST(delete_multiple) {
+    double vec[MAX_VEC_SIZE] = {1, 2, 3, 4};
+    ASSERT_EQ(init(), 0);
+    ASSERT_EQ(set_value(0, "test", 4, vec), 0);
+    ASSERT_EQ(delete_key(0), 0);
+    ASSERT_EQ(delete_key(0), -1);
     return 0;
 }
 
