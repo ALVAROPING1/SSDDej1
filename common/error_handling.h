@@ -14,13 +14,23 @@
 #define _STR(x) _STR_WRAPPER(x)
 
 /**
+ * @brief Formats a message
+ *
+ * @param err Error type
+ * @param msg Error message
+ * @param color ANSI color code to use as a string
+ * @return Formatted message
+ */
+#define _FMT_MESSAGE(err, msg, color)                                          \
+    "\033[" color ";1m[" err "]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
+
+/**
  * @brief Formats a warn message
  *
  * @param msg Error message
  * @return Formatted message
  */
-#define WARN(msg)                                                              \
-    "\033[33;1m[WARN]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
+#define WARN(msg) _FMT_MESSAGE("WARN", msg, "33")
 
 /**
  * @brief Formats an error message
@@ -29,8 +39,7 @@
  * @param msg Error message
  * @return Formatted message
  */
-#define ERROR(err, msg)                                                        \
-    "\033[31;1m[" err "]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
+#define ERROR(err, msg) _FMT_MESSAGE(err, msg, "31")
 
 /**
  * @brief Formats an error message for the `CHECK()`/`ASSERT()` macros. Can be
