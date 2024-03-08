@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <math.h>
 
 #include "../common/claves.h"
 #include "tests.h"
@@ -57,7 +58,8 @@ TEST(set_str_values) {
 }
 
 TEST(set_vec_values) {
-    double vec[MAX_ELEMENTS] = {1, 2, 3, 4};
+    double vec[MAX_ELEMENTS] = {
+        1, 2, 3, 4, 0, -10, 0.5, NAN, INFINITY, -NAN, -INFINITY};
     ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, "a", 0, vec), -1);
     ASSERT_EQ(set_value(1, "a", 1, vec), 0);
