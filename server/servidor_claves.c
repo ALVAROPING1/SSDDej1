@@ -7,6 +7,8 @@
 #include "../common/claves.h"
 #include "../common/error_handling.h"
 
+#define ERR(msg) ERROR("REQUEST PROCESSING ERROR", msg)
+
 // ╔═══════════════════════════════════════════════════════════════════════════╗
 // ║                            Storage parameters                             ║
 // ╚═══════════════════════════════════════════════════════════════════════════╝
@@ -49,7 +51,7 @@ int unlink_cb(const char* fpath,
 int remove_dir() {
     int ret = nftw(DATA_PATH, unlink_cb, 4, FTW_DEPTH | FTW_PHYS);
     if (ret != 0 && errno != ENOENT) {
-        perror("Error deleting data folder");
+        perror(ERR("Error deleting data folder"));
         return -1;
     }
     return 0;
@@ -107,22 +109,23 @@ int write_file(const int key,
                const int vec_size,
                const double vec[],
                const file_mode mode) {
-    ASSERT(mode != Read, "Invalid file mode %d", mode)
+    ASSERT(mode != Read, ERR("Invalid file mode %d"), mode)
     ASSERT(vec_size >= 1 && vec_size <= MAX_VEC_SIZE,
-           "Invalid vector size %d",
+           ERR("Invalid vector size %d"),
            vec_size);
     int str_size = strlen(str);
-    ASSERT(str_size <= MAX_STR_SIZE - 1, "Invalid string size %d", str_size)
+    ASSERT(
+        str_size <= MAX_STR_SIZE - 1, ERR("Invalid string size %d"), str_size)
 
-    FILE* file =
-        CHECK(get_file(key, mode), "Error opening data file for writing", NULL);
+    FILE* file = CHECK(
+        get_file(key, mode), ERR("Error opening data file for writing"), NULL);
     CHECK(fwrite(str, sizeof(*str), str_size + 1, file) != str_size + 1,
-          "Error writing string");
+          ERR("Error writing string"));
     CHECK(fwrite(&vec_size, sizeof(vec_size), 1, file) != 1,
-          "Error writing vector size");
+          ERR("Error writing vector size"));
     CHECK(fwrite(vec, sizeof(*vec), vec_size, file) != vec_size,
-          "Error writing vector");
-    CHECK(fclose(file), "Error closing file after write");
+          ERR("Error writing vector"));
+    CHECK(fclose(file), ERR("Error closing file after write"));
 
     return 0;
 }
@@ -133,13 +136,13 @@ int write_file(const int key,
 
 int init() {
     CHECK(remove_dir());
-    CHECK(mkdir(DATA_PATH, 0744), "Error creating data folder");
+    CHECK(mkdir(DATA_PATH, 0744), ERR("Error creating data folder"));
     return 0;
 }
 
 int delete_key(const int key) {
     char path[PATH_SIZE];
-    CHECK(unlink(get_path(path, key)), "Error deleting key file");
+    CHECK(unlink(get_path(path, key)), ERR("Error deleting key file"));
     return 0;
 }
 
@@ -150,7 +153,7 @@ int exist(const int key) {
         return 1;
     }
     if (ENOENT == errno) { return 0; }
-    perror("Error checking existence of file");
+    perror(ERR("Error checking existence of file"));
     return -1;
 }
 
@@ -158,18 +161,18 @@ int get_value(const int key,
               char str[MAX_STR_SIZE],
               int* vec_size,
               double v[MAX_VEC_SIZE]) {
-    FILE* file =
-        CHECK(get_file(key, Read), "Error opening data file for reading", NULL);
+    FILE* file = CHECK(
+        get_file(key, Read), ERR("Error opening data file for reading"), NULL);
     int i = 0;
     do {
         ASSERT(fread(&str[i], sizeof(*str), 1, file) == 1,
-               "Error reading string");
+               ERR("Error reading string"));
     } while (str[i++] != '\0');
     ASSERT(fread(vec_size, sizeof(*vec_size), 1, file) == 1,
-           "Error reading vector size");
+           ERR("Error reading vector size"));
     ASSERT(fread(v, sizeof(*v), *vec_size, file) == *vec_size,
-           "Error reading vector");
-    CHECK(fclose(file), "Error closing file after reading");
+           ERR("Error reading vector"));
+    CHECK(fclose(file), ERR("Error closing file after reading"));
 
     return 0;
 }

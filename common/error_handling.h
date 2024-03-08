@@ -14,14 +14,36 @@
 #define _STR(x) _STR_WRAPPER(x)
 
 /**
- * @brief Formats an error message
+ * @brief Formats a warn message
  *
- * @param err Error type
  * @param msg Error message
  * @return Formatted message
  */
-#define ERROR(err, msg)                                                        \
+#define WARN(msg)                                                              \
+    "\033[33;1m[WARN]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
+
+/**
+ * @brief `ERROR()` macro with 2 parameters
+ */
+#define _ERROR2(err, msg)                                                      \
     "\033[31;1m[" err "]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
+
+/**
+ * @brief `ERROR()` macro with 1 parameters
+ */
+#define _ERROR1(msg) _ERROR2("ERROR", msg)
+
+// Gets the appropriate macro for the amount of arguments
+#define _GET_ERROR(_1, _2, NAME, ...) NAME
+
+/**
+ * @brief Formats an error message
+ *
+ * @param err [Optional] Error type. `ERROR` by default
+ * @param msg Error message
+ * @return Formatted message
+ */
+#define ERROR(...) _GET_ERROR(__VA_ARGS__, _ERROR2, _ERROR1)(__VA_ARGS__)
 
 /**
  * @brief `CHECK()` macro with 3 parameters
@@ -30,7 +52,7 @@
     ({                                                                         \
         typeof(expr) _res = expr;                                              \
         if (_res == err_val) {                                                 \
-            perror(ERROR("ERROR", err_msg));                                   \
+            perror(err_msg);                                                   \
             return -1;                                                         \
         }                                                                      \
         _res;                                                                  \
@@ -41,7 +63,7 @@
  */
 #define _CHECK2(expr, err_msg)                                                 \
     if ((expr) != 0) {                                                         \
-        perror(ERROR("ERROR", err_msg));                                       \
+        perror(err_msg);                                                       \
         return -1;                                                             \
     }
 
@@ -77,7 +99,7 @@
  */
 #define ASSERT(expr, err_msg, ...)                                             \
     if (!(expr)) {                                                             \
-        fprintf(stderr, ERROR("ERROR", err_msg "\n"), ##__VA_ARGS__);          \
+        fprintf(stderr, err_msg "\n", ##__VA_ARGS__);                          \
         return -1;                                                             \
     }
 
