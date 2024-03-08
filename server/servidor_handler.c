@@ -5,7 +5,8 @@
 #include "../common/error_handling.h"
 #include "servidor_handler.h"
 
-#define ERR(msg) ERROR("CONNECTION ERROR", msg)
+#undef FMT_ERROR
+#define FMT_ERROR(msg) ERROR("REQUEST PROCESSING ERROR", msg)
 
 /**
  * @brief Executes a request
@@ -33,8 +34,11 @@ int execute_request(const Request* req, Response* res) {
     case Modify:
         return modify_value(req->key, req->str, req->vec_size, req->vec);
     }
-    ASSERT(false, ERROR("REQUEST PROCESSING ERROR", "Unknown operation code"));
+    ASSERT(false, "Unknown operation code");
 }
+
+#undef FMT_ERROR
+#define FMT_ERROR(msg) ERROR("CONNECTION ERROR", msg)
 
 int handle_request(const Request* request) {
     Response response;
@@ -43,10 +47,10 @@ int handle_request(const Request* request) {
     response.ret_value = execute_request(request, &response);
     mqd_t queue =
         CHECK(mq_open(request->q_name, O_CREAT | O_WRONLY, 0700, &q_attr),
-              ERR("Error opening response message queue"),
+              "Error opening response message queue",
               -1);
     CHECK(mq_send(queue, (const char*) &response, sizeof(response), 1),
-          ERR("Error sending response message"));
-    CHECK(mq_close(queue), ERR("Error closing response queue"));
+          "Error sending response message");
+    CHECK(mq_close(queue), "Error closing response queue");
     return 0;
 };

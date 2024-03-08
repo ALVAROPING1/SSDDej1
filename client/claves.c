@@ -7,8 +7,8 @@
 #include "../common/error_handling.h"
 #include "../common/messages.h"
 
-#define ERR(msg) ERROR("CONNECTION ERROR", msg)
-#define ERR_REQ(msg) ERROR("REQUEST PROCESSING ERROR", msg)
+#undef FMT_ERROR
+#define FMT_ERROR(msg) ERROR("CONNECTION ERROR", msg)
 
 // ╔═══════════════════════════════════════════════════════════════════════════╗
 // ║                             Server Connection                             ║
@@ -30,10 +30,10 @@ static int send_message(const Request* request,
                         const mqd_t q_server,
                         const mqd_t q_res) {
     CHECK(mq_send(q_server, (char*) request, sizeof(*request), 0),
-          ERR("Error sending message"),
+          "Error sending message",
           -1);
     CHECK(mq_receive(q_res, (char*) response, sizeof(*response), NULL),
-          ERR("Error receiving message"),
+          "Error receiving message",
           -1);
     return 0;
 }
@@ -54,13 +54,13 @@ static int make_request(Request* request, Response* response) {
                                    .mq_maxmsg = 10};
 
     int q_server = CHECK(mq_open("/SERVIDOR", O_WRONLY),
-                         ERR("Error opening server message queue"),
+                         "Error opening server message queue",
                          -1);
     int q_res = mq_open(request->q_name, O_CREAT | O_RDONLY, 0700, &q_attr);
 
     if (q_res == -1) {
-        perror(ERR("Error creating response message queue"));
-        CHECK(mq_close(q_server), ERR("Error closing server message queue"));
+        perror(FMT_ERROR("Error creating response message queue"));
+        CHECK(mq_close(q_server), "Error closing server message queue");
         return -1;
     }
 
@@ -109,17 +109,18 @@ int get_value(const int key,
     return 0;
 }
 
+#undef FMT_ERROR
+#define FMT_ERROR(msg) ERROR("REQUEST PROCESSING ERROR", msg)
+
 int set_value(const int key,
               const char string[],
               const int vec_size,
               const double vec[vec_size]) {
     ASSERT(vec_size >= 1 && vec_size <= MAX_VEC_SIZE,
-           ERR_REQ("Invalid vector size %d"),
+           "Invalid vector size %d",
            vec_size);
     int str_size = strlen(string);
-    ASSERT(str_size <= MAX_STR_SIZE - 1,
-           ERR_REQ("Invalid string size %d"),
-           str_size)
+    ASSERT(str_size <= MAX_STR_SIZE - 1, "Invalid string size %d", str_size)
     Request request = {.op_code = Set, .key = key, .vec_size = vec_size};
     Response response;
     strcpy(request.str, string);
@@ -132,12 +133,10 @@ int modify_value(const int key,
                  const int vec_size,
                  const double vec[vec_size]) {
     ASSERT(vec_size >= 1 && vec_size <= MAX_VEC_SIZE,
-           ERR_REQ("Invalid vector size %d"),
+           "Invalid vector size %d",
            vec_size);
     int str_size = strlen(string);
-    ASSERT(str_size <= MAX_STR_SIZE - 1,
-           ERR_REQ("Invalid string size %d"),
-           str_size)
+    ASSERT(str_size <= MAX_STR_SIZE - 1, "Invalid string size %d", str_size)
     Request request = {.op_code = Modify, .key = key, .vec_size = vec_size};
     Response response;
     strcpy(request.str, string);

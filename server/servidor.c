@@ -29,13 +29,13 @@ void* setup_request(void* request) {
     memcpy(&req, request, sizeof(req));
     // Zona de copia de mensajes
     if (pthread_mutex_lock(&m_copy) != 0) {
-        perror(ERROR("Error locking copy mutex on worker thread"));
+        perror(FMT_ERROR("Error locking copy mutex on worker thread"));
         return (void*) -1;
     }
     copied = true;
     pthread_cond_signal(&c_copy);
     if (pthread_mutex_unlock(&m_copy) != 0) {
-        perror(ERROR("Error unlocking copy mutex on worker thread"));
+        perror(FMT_ERROR("Error unlocking copy mutex on worker thread"));
         return (void*) -1;
     }
     return (void*) (long) handle_request(&req);
@@ -81,15 +81,15 @@ int main() {
     };
 
     CHECK(pthread_attr_init(&t_attr),
-          ERROR("Error creating thread attributes struct"));
+          "Error creating thread attributes struct");
     CHECK(pthread_attr_setdetachstate(&t_attr, PTHREAD_CREATE_DETACHED),
-          ERROR("Error setting detach state on thread attributes struct"));
+          "Error setting detach state on thread attributes struct");
 
     Request request;
     const struct mq_attr q_attr = {.mq_msgsize = sizeof(Request),
                                    .mq_maxmsg = 10};
     queue = CHECK(mq_open("/SERVIDOR", O_CREAT | O_RDONLY, 0700, &q_attr),
-                  ERROR("Error creating requests message queue"),
+                  "Error creating requests message queue",
                   -1);
 
     printf("\033[32;1m[SERVER STARTED]\033[0m\n");
@@ -109,13 +109,13 @@ int main() {
         }
 
         CHECK(pthread_mutex_lock(&m_copy),
-              ERROR("Error locking copy mutex on main thread"));
+              "Error locking copy mutex on main thread");
         while (!copied) {
             pthread_cond_wait(&c_copy, &m_copy);
         }
         copied = false;
         CHECK(pthread_mutex_unlock(&m_copy),
-              ERROR("Error unlocking copy mutex on main thread"));
+              "Error unlocking copy mutex on main thread");
     }
 
     return EXIT_SUCCESS;

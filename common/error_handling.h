@@ -23,27 +23,21 @@
     "\033[33;1m[WARN]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
 
 /**
- * @brief `ERROR()` macro with 2 parameters
- */
-#define _ERROR2(err, msg)                                                      \
-    "\033[31;1m[" err "]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
-
-/**
- * @brief `ERROR()` macro with 1 parameters
- */
-#define _ERROR1(msg) _ERROR2("ERROR", msg)
-
-// Gets the appropriate macro for the amount of arguments
-#define _GET_ERROR(_1, _2, NAME, ...) NAME
-
-/**
  * @brief Formats an error message
  *
- * @param err [Optional] Error type. `ERROR` by default
+ * @param err Error type
  * @param msg Error message
  * @return Formatted message
  */
-#define ERROR(...) _GET_ERROR(__VA_ARGS__, _ERROR2, _ERROR1)(__VA_ARGS__)
+#define ERROR(err, msg)                                                        \
+    "\033[31;1m[" err "]:\033[0m " __FILE__ ":" _STR(__LINE__) ": " msg
+
+/**
+ * @brief Formats an error message for the `CHECK()`/`ASSERT()` macros. Can be
+ * overridden to customize the format. If overridden, it should expand to the
+ * `WARN()`/`ERROR()` macros
+ */
+#define FMT_ERROR(msg) ERROR("ERROR", msg)
 
 /**
  * @brief `CHECK()` macro with 3 parameters
@@ -52,7 +46,7 @@
     ({                                                                         \
         typeof(expr) _res = expr;                                              \
         if (_res == err_val) {                                                 \
-            perror(err_msg);                                                   \
+            perror(FMT_ERROR(err_msg));                                        \
             return -1;                                                         \
         }                                                                      \
         _res;                                                                  \
@@ -63,7 +57,7 @@
  */
 #define _CHECK2(expr, err_msg)                                                 \
     if ((expr) != 0) {                                                         \
-        perror(err_msg);                                                       \
+        perror(FMT_ERROR(err_msg));                                            \
         return -1;                                                             \
     }
 
@@ -79,7 +73,8 @@
 /**
  * @brief Checks that the given expression didn't result in an error. Evaluates
  * to its value if there wasn't an error, and returns -1 from the current
- * function otherwise
+ * function otherwise. The `FMT_ERROR()` macro can be overridden to customize
+ * the error message format
  *
  * @param expr Expression to evaluate
  * @param err_msg [Optional] Error message
@@ -91,7 +86,9 @@
 
 /**
  * @brief Asserts that a given expression is `true`, printing a formatted
- * message to `stderr` and returning -1 from the current function otherwise
+ * message to `stderr` and returning -1 from the current function otherwise.
+ * The `FMT_ERROR()` macro can be overridden to customize the error message
+ * format
  *
  * @param expr Expression to evaluate
  * @param err_msg Error message format string
@@ -99,7 +96,7 @@
  */
 #define ASSERT(expr, err_msg, ...)                                             \
     if (!(expr)) {                                                             \
-        fprintf(stderr, err_msg "\n", ##__VA_ARGS__);                          \
+        fprintf(stderr, FMT_ERROR(err_msg "\n"), ##__VA_ARGS__);               \
         return -1;                                                             \
     }
 
