@@ -154,13 +154,21 @@ TEST(modify_element) {
     ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, str, 4, vec), 0);
 
-    double vec2[MAX_VEC_SIZE] = {1, 4, 6, 8};
+    double vec2[MAX_VEC_SIZE] = {1, 4, 6};
     char str2[MAX_STR_SIZE] = "hola";
 
-    ASSERT_EQ(modify_value(0, str2, 4, vec2), 0);
+    ASSERT_EQ(modify_value(0, str2, 3, vec2), 0);
     ASSERT_EQ(get_value(0, str, &n_value, vec), 0);
-    ASSERT_EQ_VEC(vec, n_value, vec2, 4);
+    ASSERT_EQ_VEC(vec, n_value, vec2, 3);
     ASSERT_EQ(str, str2);
+
+    double vec3[MAX_VEC_SIZE] = {1, 4, 6, 8, -1, 0, 10};
+    char str3[MAX_STR_SIZE] = "very long string content for testing";
+
+    ASSERT_EQ(modify_value(0, str3, 6, vec3), 0);
+    ASSERT_EQ(get_value(0, str, &n_value, vec), 0);
+    ASSERT_EQ_VEC(vec, n_value, vec3, 6);
+    ASSERT_EQ(str, str3);
     return 0;
 }
 
@@ -221,6 +229,7 @@ int main() {
     set_get();
     get_empty();
     get_many_elements();
+    modify_none();
     modify_element();
     exist_none();
     exist_element();

@@ -89,8 +89,9 @@ typedef enum {
  */
 FILE* get_file(const int key, const file_mode mode) {
     char path[PATH_SIZE];
-    return fopen(get_path(path, key),
-                 mode == Read ? "r" : (mode == Update ? "w" : "wx"));
+    FILE* file = fopen(get_path(path, key), mode == New ? "wx" : "r");
+    if (file == NULL || mode != Update) { return file; }
+    return freopen(NULL, "w", file);
 }
 
 /**
