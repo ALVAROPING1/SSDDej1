@@ -74,7 +74,7 @@ void gen_test_data(pid_t pid,
     }
 }
 
-int set_multiple() {
+int set_concurrent_child() {
     pid_t pid = getpid();
     char str[MAX_STR_SIZE];
     double vec[MAX_VEC_SIZE];
@@ -85,7 +85,7 @@ int set_multiple() {
 TEST(set_concurrent) {
     ASSERT_EQ(init(), 0);
     pid_t pid;
-    ASSERT_EQ(exclusive_concurrent_test(set_multiple, &pid), 0);
+    ASSERT_EQ(exclusive_concurrent_test(set_concurrent_child, &pid), 0);
 
     char str[MAX_STR_SIZE];
     double vec[MAX_VEC_SIZE] = {0};
@@ -101,7 +101,7 @@ TEST(set_concurrent) {
     return 0;
 }
 
-int get_many_elements() {
+int set_get_concurrent_child() {
     char strs[MAX_ELEMENTS][MAX_STR_SIZE];
     double vecs[MAX_ELEMENTS][MAX_VEC_SIZE];
 
@@ -137,11 +137,11 @@ int get_many_elements() {
 
 TEST(set_get_concurrent) {
     ASSERT_EQ(init(), 0);
-    ASSERT_EQ(concurrent_test(get_many_elements), 0);
+    ASSERT_EQ(concurrent_test(set_get_concurrent_child), 0);
     return 0;
 }
 
-int modify_element() {
+int modify_concurrent_child() {
     char str[MAX_STR_SIZE];
     double vec[MAX_VEC_SIZE];
     pid_t pid = getpid();
@@ -172,11 +172,11 @@ TEST(modify_concurrent) {
 
     ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, "empty", 1, vec), 0);
-    ASSERT_EQ(concurrent_test(modify_element), 0);
+    ASSERT_EQ(concurrent_test(modify_concurrent_child), 0);
     return 0;
 }
 
-int delete_multiple() {
+int delete_concurrent_child() {
     return delete_key(0);
 }
 
@@ -187,7 +187,7 @@ TEST(delete_concurrent) {
     ASSERT_EQ(set_value(0, "empty", 1, vec), 0);
 
     pid_t pid;
-    ASSERT_EQ(exclusive_concurrent_test(delete_multiple, &pid), 0);
+    ASSERT_EQ(exclusive_concurrent_test(delete_concurrent_child, &pid), 0);
     ASSERT_EQ(exist(0), 0);
     return 0;
 }
