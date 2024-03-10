@@ -6,6 +6,27 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
 
 * Diseño
 
+  Sobre las decisiones de diseño tomadas para esta práctica, se han tomado las siguientes:
+
+  - Las /*peticiones*/ se han representado como estructuras distintas. Diferenciando así entre 
+    las de las respuestas a las operaciones (_struct Response_) y las demás (_struct Request_).
+
+  - Dichas peticiones contendrán todos los datos necesarios para el procesamiento de las operaciones
+    en el servidor y la representación de los resultados de las mismas para el cliente. Esto incluye un campo
+    específico para el /id de operación/, /llave o identificador de vector/, /string o parámetro 1/, /longitud de el vector/
+    y un espacio estático de 32 elementos (máximo de elementos disponibles) para el vector en sí.
+
+  - La estructura del proyecto se divide en varias subcarpetas:
+  -- /*CLIENT*/: Esta carpeta contiene todo lo relacionado con la parte del sistema del lado del cliente. Se compone de un archivo "_claves.c_" (almacenamiento de servicios para entregar las distintas peticiones al servidor ), "_cliente.c_" ( archivo en el que se alojan los distintos tests no concurrentes a realizar por el cliente ), "_cliente_concurrent.c_" ( archivo/batería de tests concurrentes que involucran a varios cientes ), "_tests.c_" ( localización de funciones de depuración varias ).
+  -- */COMMON/*: Sección en la que se incluyen las funciones o servicios comunes para el cliente y el servidor. Se puede localizar el archivo "_error_handling.h_" ( dedicado a soporte para la validación de errores ), "_messages.h_" ( inclusión de los prototipos de las peticiones de ida y respuestas ) y "_claves.h_" ( donde se declaran los prototipos de los servicios a usar por el cliente en el sistema distribuido).
+  -- /*SERVER*/: Apartado en el que se desarrolla toda la parte del sistema que incluye al servidor. En el archivo "_servidor.c_" puede ver el código principal del programa para la parte del servidor. En el archivo "_servidor_claves.c_" se listan todas las operaciones a realizar para operar con vectores en la plataforma y almacenarlos. Por otro lado, desde "_servidor_handler.c y .h_" se puede observar que se incluyen las funciones necesarias para el procesamiento de peticiones por el lado del servidor.
+
+  - Para la codificación de la práctica se ha optado por la creación de una implementación modular ( un módulo por archivo ) debido a la grán cantidad de código producido. Ésto también mejora la organización del proyecto.
+
+  - Se ha optado por crear un módulo en específico para el manejo de errores no incluido en el ejercicio. La razón de realizarlo fue el largo y tedioso proceso de depuración en este proyecto.
+
+
+
 ** Mecanismo de almacenamiento
 
 * Compilación y pruebas
