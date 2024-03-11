@@ -4,29 +4,148 @@ subtitle: Sistemas Distribuidos
 author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
 @end
 
+@embed latex
+\vspace{2.5cm}
+@end
+
 * Diseño
 
-  Sobre las decisiones de diseño tomadas para esta práctica, se han tomado las siguientes:
+** Decisiones de diseño y estructura del proyecto
 
-  - Las /*peticiones*/ se han representado como estructuras distintas. Diferenciando así entre 
-    las de las respuestas a las operaciones (_struct Response_) y las demás (_struct Request_).
+   Las decisiones de diseño tomadas para esta práctica han sido las siguientes:
 
-  - Dichas peticiones contendrán todos los datos necesarios para el procesamiento de las operaciones
-    en el servidor y la representación de los resultados de las mismas para el cliente. Esto incluye un campo
-    específico para el /id de operación/, /llave o identificador de vector/, /string o parámetro 1/, /longitud de el vector/
-    y un espacio estático de 32 elementos (máximo de elementos disponibles) para el vector en sí.
+   - Las /*peticiones*/ se han representado como estructuras distintas, diferenciando entre
+     las de peticiones de operaciones (`struct Request`) y las respuestas a las operaciones (`struct Response`).
+   - Dichas peticiones contendrán todos los datos necesarios para el procesamiento de las operaciones
+     en el servidor y la representación de los resultados de las mismas para el cliente. Esto incluye un campo
+     específico para el /id de operación/, /clave o identificador del elemento/, /string o valor 1/, /longitud del vector/
+     y /vector de doubles o valor 2/.
 
-  - La estructura del proyecto se divide en varias subcarpetas:
-  -- /*CLIENT*/: Esta carpeta contiene todo lo relacionado con la parte del sistema del lado del cliente. Se compone de un archivo "_claves.c_" (almacenamiento de servicios para entregar las distintas peticiones al servidor ), "_cliente.c_" ( archivo en el que se alojan los distintos tests no concurrentes a realizar por el cliente ), "_cliente_concurrent.c_" ( archivo/batería de tests concurrentes que involucran a varios cientes ), "_tests.c_" ( localización de funciones de depuración varias ).
-  -- */COMMON/*: Sección en la que se incluyen las funciones o servicios comunes para el cliente y el servidor. Se puede localizar el archivo "_error_handling.h_" ( dedicado a soporte para la validación de errores ), "_messages.h_" ( inclusión de los prototipos de las peticiones de ida y respuestas ) y "_claves.h_" ( donde se declaran los prototipos de los servicios a usar por el cliente en el sistema distribuido).
-  -- /*SERVER*/: Apartado en el que se desarrolla toda la parte del sistema que incluye al servidor. En el archivo "_servidor.c_" puede ver el código principal del programa para la parte del servidor. En el archivo "_servidor_claves.c_" se listan todas las operaciones a realizar para operar con vectores en la plataforma y almacenarlos. Por otro lado, desde "_servidor_handler.c y .h_" se puede observar que se incluyen las funciones necesarias para el procesamiento de peticiones por el lado del servidor.
+   La estructura del proyecto se divide en varias carpetas y archivos:
 
-  - Para la codificación de la práctica se ha optado por la creación de una implementación modular ( un módulo por archivo ) debido a la grán cantidad de código producido. Ésto también mejora la organización del proyecto.
+   - /*CLIENT*/: Esta carpeta contiene todo lo relacionado con la parte del sistema del lado del cliente.
+   -- Archivo `claves.c`: implementa la librería dinámica del cliente que ofrece las funciones del servicio mediante peticiones al servidor.
+   -- Archivo `cliente.c`: archivo en el que se alojan los distintos tests no concurrentes a realizar por el cliente.
+   -- Archivo `cliente_concurrent.c`: archivo/batería de tests concurrentes que involucran a varios cientes.
+   -- Archivos `tests.c` y `tests.h`: definición de funciones y macros auxiliares para definir las pruebas y comprobar su correcta ejecución automáticamente.
+   - /*COMMON*/: Carpeta en la que se incluyen las declaraciones comunes para el cliente y el servidor.
+   -- Archivo `error_handling.h`: archivo con la definición de macros generales para la comprobación y tratamiento de errores.
+   -- Archivo `messages.h`: contiene la declaración de las estructuras de las peticiones y respuestas entre el servidor y los clientes.
+   -- Archivo `claves.h`: contiene la declaración de los prototipos de los servicios a usar por el cliente en el sistema distribuido. Esta declaración es la que implementa tanto la librería dinámica del cliente (en `client/claves.c`) como el servidor (en `servidor_claves.c`).
+   - /*SERVER*/: Carpeta en la que se desarrolla toda la parte del sistema que incluye al servidor.
+   -- Archivo `servidor.c`: contiene el punto de entrada principal del programa para la parte del servidor, y se encarga de recibir las peticiones y crear los hilos necesarios para tratarlas.
+   -- Archivo `servidor_claves.c`: implementación de todas las operaciones del servicio.
+   -- Archivo `servidor_handler.c`: implementa las funciones necesarias para el procesamiento de peticiones por el servidor, usando las funciones definidas en `servidor_claves.c`.
 
-  - Se ha optado por crear un módulo en específico para el manejo de errores no incluido en el ejercicio. La razón de realizarlo fue el largo y tedioso proceso de depuración en este proyecto.
+   Para la codificación de la práctica se ha optado por la creación de una
+   implementación modular (un módulo por archivo) para organizar el código y
+   facilitar las modificaciones en el futuro que requieran cambiar el método de
+   comunicación entre el cliente y el servidor. Ésto también ha mejorado la
+   organización del proyecto, ya que la mayoría de módulos han acabado siendo
+   ficheros relativamente pequeños.
 
+   Además, se ha optado por crear un módulo específico para el manejo de errores
+   no incluido en el ejercicio. Este módulo permite simplificar mucho la gestión
+   de errores y hacer el código más legible. La principal funcionalidad de este
+   módulo es la macro `CHECK`, que comprueba si una expresión ha resultado en un
+   error. Si este es el caso, imprime un mensaje de error dado por `stderr` y lo
+   propaga devolviéndolo de la función actual (motivo por el cual se necesitó
+   una macro, ya que una función auxiliar no puede realizar esta tarea). Si no
+   ha habido ningún error, devuelve el resultado de la función.
 
+   Se ha decidido usar una misma interfaz tanto para la biblioteca dinámica del
+   cliente que ofrece el servicio y como para la implementación del servicio en
+   el servidor ya que nos permite asegurarnos de que el servicio es el mismo en
+   ambos casos y está siempre actualizado en caso de necesitar modificaciones.
+   Además, esto permite que la implementación de las funciones en el servidor no
+   dependa de la implementación de la comunicación, usando un módulo distinto
+   (`server/servidor_handler.c`) para realizar la traducción entre la interfaz
+   del servicio y la interfaz requerida por las comunicaciones.
 
 ** Mecanismo de almacenamiento
 
+   Inicialmente se realizaron 2 implementaciones: una basada en listas enlazadas
+   y otra basada en ficheros. Esto se hizo para poder comparar ambas
+   implementaciones y escoger la más apropiada. Aunque la implementación basada
+   en listas enlazadas era más rápida en las pruebas no concurrentes, era más
+   compleja y requería de un mutex global para todos los elementos en algunas de
+   las operaciones. La implementación basada en ficheros, en cambio, era más
+   simple y no requería control de concurrencia explícito para las operaciones,
+   ya que usaba ficheros pequeños (menores al tamaño de una página) que por lo
+   tanto se creaban, leían, escribían, y borraban de manera atómica por el
+   sistema operativo.
+
+   Tras tener en cuenta estos factores, decidimos usar la implementación basada
+   en ficheros. En nuestra implementation, la clave de los elementos determina
+   el nombre del archivo con los datos (almacenados en una carpeta `data` que el
+   servidor crea si no existe durante la initialization). Los ficheros almacenan
+   los datos de cada elemento (/string/, /longitud del vector/, y el /vector/)
+   en binario con longitud variable.
+
 * Compilación y pruebas
+
+** Compilación
+
+   Para compilar el proyecto, solo se necesita ejecutar `make` en el directorio
+   raíz del proyecto. Esto genera 4 archivos compilados:
+
+   - `servidor`: ejecutable del servidor.
+   - `cliente`: ejecutable del cliente que realiza las pruebas no concurrentes.
+   - `cliente_concurrent`: ejecutable del cliente que realiza las pruebas concurrentes.
+   - `libclaves.so`: biblioteca dinámica usada por los clientes que ofrece el servicio implementado.
+
+   La compilación está configurada para que los clientes busquen la biblioteca
+   dinámica `libclaves.so` en el directorio actual, por lo que no es necesario
+   modificar las variables de entorno para incluir el directorio actual en la
+   lista de directorios en los que buscar bibliotecas dinámicas.
+
+** Pruebas realizadas
+
+*** Pruebas no concurrentes
+
+    Las pruebas realizadas son las siguientes:
+
+    - Función `init()`:
+    -- Borra todos los elementos previamente almacenados
+    -- Ejecutarla múltiples veces no causa errores
+    - Función `set_value()`:
+    -- Usar una clave previamente usada resulta en un error
+    -- La clave puede tomar cualquier valor sin causar errores. Más concretamente, se han probado valores positivos, negativos, $0$, y los valores mínimos y máximos representables en el tipo de datos usado (enteros de 32 bits)
+    -- El valor `string` puede tomar cualquier longitud válida. Más concretamente, se han probado cadenas vacías y de longitud $1$, $2$, y $255$ caracteres (sin contar el byte nulo `|\0|`)
+    -- El valor string no puede tomar longitudes inválidas. Mas concretamente, se han probado cadenas de longitud superior a la máxima ($256$ o más caracteres)
+    -- El valor `vector` puede tomar todos los valores de un `double`. Mas concretamente, se han probado números positivos, negativos, enteros, racionales, infinitos, y `NaN`s
+    -- El valor `vector` puede tomar todas las longitudes válidas. Mas concretamente, se han probado longitudes de $1$, $2$, $31$, y $32$ elementos
+    -- El valor `vector` no puede tomar longitudes inválidas. Mas concretamente, se han probado longitudes de $0$, $33$, y $1024$ elementos. También se intentaron probar longitudes negativas ($-1$ y el mínimo valor de un entero de 32 bits), pero el compilador fue lo suficientemente inteligente para detectar este problema y dar un error de compilación
+    -- En todos los casos en los que se usan datos válidos, el valor escrito es el leído por la función `get_value()`
+    -- En todos los casos en los que se usan datos inválidos, las claves no se crean
+    -- Se puede crear cualquier cantidad de elementos simultáneos
+    - Función `get_value()`:
+    -- Devuelve un error si se intenta leer un elemento con una clave que no existe
+    -- El valor escrito por las funciones `set_value()` o `modify_values()` es el leído por esta función
+    -- Cuando hay múltiples archivos, los datos leídos son los que se corresponden con la clave dada
+    - Función `modify_value()`:
+    -- Devuelve un error si se intenta modificar el valor asociado a una clave que no existe
+    -- Modifica el valor correctamente, tanto cuando el tamaño de los datos aumenta como cuando disminuye
+    -- Todas las pruebas sobre los posibles valores del valor `string` y `vector` realizadas para la función `set_value()` se han repetido con esta función
+    -- En todos los casos en los que se usan datos inválidos, los elementos no se modifican
+    - Función `exist()`: funciona correctamente al comprobar tanto claves que existen como claves que no existen
+    - Función `delete_key()`:
+    -- Devuelve un error cuando se intenta borrar un elemento que no existe
+    -- Si la clave existe, se borra correctamente
+    -- Si hay múltiples claves, se borra la clave correcta
+
+    Se ha decidido no realizar pruebas de los errores en las comunicaciones debido a la dificultad de replicar estos casos.
+
+    Cabe destacar que, como algunas de las pruebas comprueban que se producen los errores correctos, es recomendable ejecutarlas redirigiendo la salida estándar de error a un fichero con `./cliente 2> /dev/null`. Esto es debido a que la librería dinámica está diseñada para imprimir mensajes de error por esta salida cuando se detecta un problema, y estos se mensajes se podrían confundir con los mensajes de fallo de las pruebas enviados por la salida estándar.
+
+*** Pruebas concurrentes
+
+    Las pruebas realizadas son las siguientes:
+
+    - Función `set_value()`:
+    -- Si varios clientes intentan crear un elemento con la misma clave a la vez, solo uno de ellos lo crea y se almacenan los datos dados por este cliente. Todos los demás clientes reciben un error.
+    -- Varios clientes pueden crear elementos con diferentes claves a la vez, y los datos se almacenan correctamente.
+    - Función `modify_value()`: varios clientes pueden modificar el valor de un mismo elemento a la vez, y en todo momento los valores almacenados son los correctos dados por uno de los clientes.
+    - Función `delete_key()`: si varios clientes intentan borrar un elemento con la misma clave a la vez, solo uno de ellos lo borra, y todos los demás clientes reciben un error.
+
+    El resto de funciones no se ven afectadas por accesos concurrentes, por lo que no es necesario hacer pruebas para ellas.
