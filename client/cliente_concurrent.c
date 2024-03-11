@@ -114,9 +114,8 @@ int set_get_concurrent_child() {
 
     // Insertion of 1024 elements.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
-        snprintf(strs[i], sizeof(strs[i]), "test content: %d", i);
-        vecs[i][0] = i;
-        ASSERT_EQ(set_value(start + i, strs[i], 1, vecs[i]), 0);
+        gen_test_data(pid, strs[i], vecs[i]);
+        ASSERT_EQ(set_value(start + i, strs[i], MAX_VEC_SIZE, vecs[i]), 0);
     }
     printf("Process %d: all values set\n", pid);
 
@@ -129,7 +128,7 @@ int set_get_concurrent_child() {
     // Check the values are stored correctly.
     for (int i = 0; i < MAX_ELEMENTS; ++i) {
         ASSERT_EQ(strs_res[i], strs[i]);
-        ASSERT_EQ_VEC(vecs_res[i], n_res[i], vecs[i], 1);
+        ASSERT_EQ_VEC(vecs_res[i], n_res[i], vecs[i], MAX_VEC_SIZE);
     }
 
     return 0;
@@ -169,7 +168,6 @@ int modify_concurrent_child() {
 
 TEST(modify_concurrent) {
     double vec[MAX_VEC_SIZE] = {1};
-
     ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, "empty", 1, vec), 0);
     ASSERT_EQ(concurrent_test(modify_concurrent_child), 0);
@@ -182,11 +180,9 @@ int delete_concurrent_child() {
 
 TEST(delete_concurrent) {
     double vec[MAX_VEC_SIZE] = {1};
-
+    pid_t pid;
     ASSERT_EQ(init(), 0);
     ASSERT_EQ(set_value(0, "empty", 1, vec), 0);
-
-    pid_t pid;
     ASSERT_EQ(exclusive_concurrent_test(delete_concurrent_child, &pid), 0);
     ASSERT_EQ(exist(0), 0);
     return 0;
