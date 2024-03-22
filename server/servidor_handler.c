@@ -43,10 +43,8 @@ int execute_request(const Request* req, Response* res) {
 #define FMT_ERROR(msg) ERROR("CONNECTION ERROR", msg)
 
 int handle_request(int sd, const Request* request) {
-    printf("request: opcode: %d, key: %d\n", request->op_code, request->key);
     Response response = {0};
     response.ret_value = execute_request(request, &response);
-    printf("result: %d\n", response.ret_value);
     CHECK(send_int(sd, response.ret_value), "Error sending return value");
     CHECK(send_value(sd, response.str, response.vec_size, response.vec));
     CHECK(close(sd), "Error closing client socket");

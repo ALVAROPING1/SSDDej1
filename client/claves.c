@@ -37,7 +37,6 @@ static int send_message(int sd, const Request* request, Response* response) {
     CHECK(send_int(sd, request->key), "Error sending key");
     CHECK(send_value(sd, request->str, request->vec_size, request->vec));
     CHECK(recv_int(sd, &response->ret_value), "Error receiving return value");
-    printf("response: %d\n", response->ret_value);
     CHECK(recv_value(sd, response->str, &response->vec_size, response->vec));
     return 0;
 }
@@ -96,7 +95,7 @@ static int make_request(Request* request, Response* response) {
     if (send_message(sd, request, response) == -1) { response->ret_value = -1; }
 
     CHECK(close(sd), "Error closing client socket");
-    return 0;
+    return response->ret_value;
 }
 
 // ╔═══════════════════════════════════════════════════════════════════════════╗

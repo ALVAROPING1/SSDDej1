@@ -151,7 +151,6 @@ int exist(const int key) {
     FILE* file = get_file(key, Read);
     if (file != NULL) {
         CHECK(fclose(file));
-        printf("file exists\n");
         return 1;
     }
     if (ENOENT == errno) { return 0; }
