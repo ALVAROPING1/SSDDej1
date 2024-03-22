@@ -51,31 +51,9 @@ static int send_message(int sd, const Request* request, Response* response) {
  * @retval -1 There was an error in the execution
  */
 static int make_request(Request* request, Response* response) {
-    // snprintf(request->q_name, sizeof(request->q_name), "/CLIENT_%d",
-    // getpid());
-    //
-    // const struct mq_attr q_attr = {.mq_msgsize = sizeof(Response),
-    //                                .mq_maxmsg = 10};
-    //
-    // int q_server = CHECK(mq_open("/SERVIDOR", O_WRONLY),
-    //                      "Error opening server message queue",
-    //                      -1);
-    // int q_res = mq_open(request->q_name, O_CREAT | O_RDONLY, 0700, &q_attr);
-    //
-    // if (q_res == -1) {
-    //     perror(FMT_ERROR("Error creating response message queue"));
-    //     CHECK(mq_close(q_server), "Error closing server message queue");
-    //     return -1;
-    // }
-    //
-    // CHECK(mq_close(q_server), "Error closing server message queue");
-    // CHECK(mq_close(q_res), "Error closing response message queue");
-    // CHECK(mq_unlink(request->q_name), "Error deleting response message
-    // queue"); return response->ret_value;
     struct sockaddr_in server_addr;
     struct hostent* hp;
 
-    // the socket is create
     int sd = CHECK(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP),
                    "Error creating client socket",
                    -1);
