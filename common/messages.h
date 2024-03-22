@@ -12,12 +12,12 @@ typedef enum { Init, Delete, Exist, Get, Set, Modify } OpCode;
  * Message request structure
  */
 typedef struct Request {
-    OpCode op_code;            // Operation code
-    int key;                   // Data key
-    int vec_size;              // Vector size
-    char str[MAX_STR_SIZE];    // String value
-    double vec[MAX_VEC_SIZE];  // Vector value
-    char q_name[MAX_STR_SIZE]; // Response queue name
+    OpCode op_code;           // Operation code
+    int key;                  // Data key
+    int vec_size;             // Vector size
+    char str[MAX_STR_SIZE];   // String value
+    double vec[MAX_VEC_SIZE]; // Vector value
+    // char q_name[MAX_STR_SIZE]; // Response queue name
 } Request;
 
 /**
@@ -25,8 +25,8 @@ typedef struct Request {
  */
 typedef struct Response {
     int ret_value;            // Return value
-    int vec_size;             // Vector size
     char str[MAX_STR_SIZE];   // String value
+    int vec_size;             // Vector size
     double vec[MAX_VEC_SIZE]; // Vector value
 } Response;
 

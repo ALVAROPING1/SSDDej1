@@ -1,7 +1,9 @@
 #include <mqueue.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "../common/claves.h"
+#include "../common/comm.h"
 #include "../common/error_handling.h"
 #include "servidor_handler.h"
 
@@ -40,17 +42,13 @@ int execute_request(const Request* req, Response* res) {
 #undef FMT_ERROR
 #define FMT_ERROR(msg) ERROR("CONNECTION ERROR", msg)
 
-int handle_request(const Request* request) {
-    Response response;
-    const struct mq_attr q_attr = {.mq_msgsize = sizeof(Response),
-                                   .mq_maxmsg = 10};
+int handle_request(int sd, const Request* request) {
+    printf("request: opcode: %d, key: %d\n", request->op_code, request->key);
+    Response response = {0};
     response.ret_value = execute_request(request, &response);
-    mqd_t queue =
-        CHECK(mq_open(request->q_name, O_CREAT | O_WRONLY, 0700, &q_attr),
-              "Error opening response message queue",
-              -1);
-    CHECK(mq_send(queue, (const char*) &response, sizeof(response), 1),
-          "Error sending response message");
-    CHECK(mq_close(queue), "Error closing response queue");
+    printf("result: %d\n", response.ret_value);
+    CHECK(send_int(sd, response.ret_value), "Error sending return value");
+    CHECK(send_value(sd, response.str, response.vec_size, response.vec));
+    CHECK(close(sd), "Error closing client socket");
     return 0;
 };

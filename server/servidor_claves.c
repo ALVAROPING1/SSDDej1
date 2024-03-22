@@ -109,7 +109,7 @@ FILE* get_file(const int key, const file_mode mode) {
 int write_file(const int key,
                const char str[],
                const int vec_size,
-               const double vec[],
+               const double vec[vec_size],
                const file_mode mode) {
     ASSERT(mode != Read, "Invalid file mode %d", mode)
     ASSERT(vec_size >= 1 && vec_size <= MAX_VEC_SIZE,
@@ -151,6 +151,7 @@ int exist(const int key) {
     FILE* file = get_file(key, Read);
     if (file != NULL) {
         CHECK(fclose(file));
+        printf("file exists\n");
         return 1;
     }
     if (ENOENT == errno) { return 0; }
@@ -161,7 +162,7 @@ int exist(const int key) {
 int get_value(const int key,
               char str[MAX_STR_SIZE],
               int* vec_size,
-              double v[MAX_VEC_SIZE]) {
+              double vec[MAX_VEC_SIZE]) {
     FILE* file =
         CHECK(get_file(key, Read), "Error opening data file for reading", NULL);
     int i = 0;
@@ -171,7 +172,7 @@ int get_value(const int key,
     } while (str[i++] != '\0');
     ASSERT(fread(vec_size, sizeof(*vec_size), 1, file) == 1,
            "Error reading vector size");
-    ASSERT(fread(v, sizeof(*v), *vec_size, file) == *vec_size,
+    ASSERT(fread(vec, sizeof(*vec), *vec_size, file) == *vec_size,
            "Error reading vector");
     CHECK(fclose(file), "Error closing file after reading");
 

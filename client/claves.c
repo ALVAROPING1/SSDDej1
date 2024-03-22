@@ -3,7 +3,14 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <netdb.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "../common/claves.h"
+#include "../common/comm.h"
 #include "../common/error_handling.h"
 #include "../common/messages.h"
 
@@ -17,24 +24,21 @@
 /**
  * @brief Sends a request to the server and receives the result
  *
+ * @param sd Socket to use for the connection
  * @param request Request to send
  * @param response Buffer in which the response should be stored
- * @param q_server Server message queue
- * @param q_res Response message queue
  * @return Error code of the communication
  * @retval 0 Successful execution
  * @retval -1 There was an error in the execution
  */
-static int send_message(const Request* request,
-                        Response* response,
-                        const mqd_t q_server,
-                        const mqd_t q_res) {
-    CHECK(mq_send(q_server, (char*) request, sizeof(*request), 0),
-          "Error sending message",
-          -1);
-    CHECK(mq_receive(q_res, (char*) response, sizeof(*response), NULL),
-          "Error receiving message",
-          -1);
+static int send_message(int sd, const Request* request, Response* response) {
+    char op_code = (char) request->op_code;
+    CHECK(sendMessage(sd, 1, &op_code), "Error sending op_code");
+    CHECK(send_int(sd, request->key), "Error sending key");
+    CHECK(send_value(sd, request->str, request->vec_size, request->vec));
+    CHECK(recv_int(sd, &response->ret_value), "Error receiving return value");
+    printf("response: %d\n", response->ret_value);
+    CHECK(recv_value(sd, response->str, &response->vec_size, response->vec));
     return 0;
 }
 
@@ -48,30 +52,51 @@ static int send_message(const Request* request,
  * @retval -1 There was an error in the execution
  */
 static int make_request(Request* request, Response* response) {
-    snprintf(request->q_name, sizeof(request->q_name), "/CLIENT_%d", getpid());
+    // snprintf(request->q_name, sizeof(request->q_name), "/CLIENT_%d",
+    // getpid());
+    //
+    // const struct mq_attr q_attr = {.mq_msgsize = sizeof(Response),
+    //                                .mq_maxmsg = 10};
+    //
+    // int q_server = CHECK(mq_open("/SERVIDOR", O_WRONLY),
+    //                      "Error opening server message queue",
+    //                      -1);
+    // int q_res = mq_open(request->q_name, O_CREAT | O_RDONLY, 0700, &q_attr);
+    //
+    // if (q_res == -1) {
+    //     perror(FMT_ERROR("Error creating response message queue"));
+    //     CHECK(mq_close(q_server), "Error closing server message queue");
+    //     return -1;
+    // }
+    //
+    // CHECK(mq_close(q_server), "Error closing server message queue");
+    // CHECK(mq_close(q_res), "Error closing response message queue");
+    // CHECK(mq_unlink(request->q_name), "Error deleting response message
+    // queue"); return response->ret_value;
+    struct sockaddr_in server_addr;
+    struct hostent* hp;
 
-    const struct mq_attr q_attr = {.mq_msgsize = sizeof(Response),
-                                   .mq_maxmsg = 10};
+    // the socket is create
+    int sd = CHECK(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP),
+                   "Error creating client socket",
+                   -1);
 
-    int q_server = CHECK(mq_open("/SERVIDOR", O_WRONLY),
-                         "Error opening server message queue",
-                         -1);
-    int q_res = mq_open(request->q_name, O_CREAT | O_RDONLY, 0700, &q_attr);
+    // Obtain Server address
+    bzero((char*) &server_addr, sizeof(server_addr));
+    hp = CHECK(
+        gethostbyname("localhost"), "Error getting host IP", NULL); // TODO:
 
-    if (q_res == -1) {
-        perror(FMT_ERROR("Error creating response message queue"));
-        CHECK(mq_close(q_server), "Error closing server message queue");
-        return -1;
-    }
+    memcpy(&(server_addr.sin_addr), hp->h_addr, hp->h_length);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(2000); // TODO:
 
-    if (send_message(request, response, q_server, q_res) == -1) {
-        response->ret_value = -1;
-    }
+    CHECK(connect(sd, (struct sockaddr*) &server_addr, sizeof(server_addr)),
+          "Error connecting to server");
 
-    CHECK(mq_close(q_server), "Error closing server message queue");
-    CHECK(mq_close(q_res), "Error closing response message queue");
-    CHECK(mq_unlink(request->q_name), "Error deleting response message queue");
-    return response->ret_value;
+    if (send_message(sd, request, response) == -1) { response->ret_value = -1; }
+
+    CHECK(close(sd), "Error closing client socket");
+    return 0;
 }
 
 // ╔═══════════════════════════════════════════════════════════════════════════╗
