@@ -7,7 +7,7 @@ LIB=-lclaves -L. -Wl,-rpath=.
 
 all: $(NAME_LIB) cliente cliente_concurrent servidor
 
-$(NAME_LIB): client/claves.c common/comm.c
+$(NAME_LIB): client/claves.c common/comm.c common/env.c
 	$(CC) $(CFLAGS) -shared -o $(NAME_LIB) -fpic $^
 
 %.o: %.c
@@ -20,7 +20,7 @@ cliente: client/cliente.o client/tests.o
 cliente_concurrent: client/cliente_concurrent.o client/tests.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
-servidor: server/servidor_claves.o server/servidor_handler.o server/servidor.o common/comm.c
+servidor: server/servidor_claves.o server/servidor_handler.o server/servidor.o common/comm.c common/env.c
 	$(CC) $(CFLAGS) -lpthread -o $@ $^
 
 clean:

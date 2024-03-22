@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <mqueue.h>
 #include <stdbool.h>
 #include <string.h>
@@ -13,6 +14,7 @@
 #include "../common/comm.h"
 #include "../common/error_handling.h"
 #include "../common/messages.h"
+#include "../common/env.h"
 
 #undef FMT_ERROR
 #define FMT_ERROR(msg) ERROR("CONNECTION ERROR", msg)
@@ -51,21 +53,22 @@ static int send_message(int sd, const Request* request, Response* response) {
  * @retval -1 There was an error in the execution
  */
 static int make_request(Request* request, Response* response) {
-    struct sockaddr_in server_addr;
-    struct hostent* hp;
+    struct sockaddr_in server_addr; 
+    int port;
+    char server_ip[MAX_STR_SIZE];  
 
     int sd = CHECK(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP),
                    "Error creating client socket",
                    -1);
 
     // Obtain Server address
-    bzero((char*) &server_addr, sizeof(server_addr));
-    hp = CHECK(
-        gethostbyname("localhost"), "Error getting host IP", NULL); // TODO:
+    bzero((char*) &server_addr, sizeof(server_addr)); 
+    CHECK(getServerIp(server_ip),"Cannot get server IP"); // Get server IP
+    CHECK(getServerPort(&port),"Cannot get server port"); // Get server PORT
 
-    memcpy(&(server_addr.sin_addr), hp->h_addr, hp->h_length);
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(2000); // TODO:
+    server_addr.sin_addr.s_addr = inet_addr(server_ip); 
+    server_addr.sin_family = AF_INET;  
+    server_addr.sin_port = htons(port);
 
     CHECK(connect(sd, (struct sockaddr*) &server_addr, sizeof(server_addr)),
           "Error connecting to server");

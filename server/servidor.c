@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -11,6 +12,7 @@
 
 #include "../common/comm.h"
 #include "../common/error_handling.h"
+#include "../common/env.h"
 #include "servidor_handler.h"
 
 int receive_request(int sd, Request* request) {
@@ -69,6 +71,11 @@ int main() {
     int newsd;
     int val;
     socklen_t size;
+    int port;
+    
+    if (signal(SIGINT, siginthandler) == SIG_ERR) {
+        perror(WARN("Error setting `SIGINT` handler"));
+    };
 
     sd = CHECK(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP),
                "Error creating server socket",
@@ -77,11 +84,14 @@ int main() {
     val = 1;
     CHECK(setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char*) &val, sizeof(int)),
           "Error setting reuse address option");
+    
+    // Get the server port environment variable.
+    CHECK(getServerPort(&port),"Cannot get server port");
 
     struct sockaddr_in server_addr, client_addr;
     bzero((char*) &server_addr, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(2000); // TODO:
+    server_addr.sin_port = htons(port); // TODO:
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
     CHECK(bind(sd, (struct sockaddr*) &server_addr, sizeof(server_addr)),
