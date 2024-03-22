@@ -56,6 +56,7 @@ static int make_request(Request* request, Response* response) {
     struct sockaddr_in server_addr; 
     int port;
     char server_ip[MAX_STR_SIZE];  
+    int res_match;
 
     int sd = CHECK(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP),
                    "Error creating client socket",
@@ -63,10 +64,18 @@ static int make_request(Request* request, Response* response) {
 
     // Obtain Server address
     bzero((char*) &server_addr, sizeof(server_addr)); 
-    CHECK(getServerIp(server_ip),"Cannot get server IP"); // Get server IP
+    CHECK(getServerIp(server_ip,&res_match),"Cannot get server IP"); // Get server IP
     CHECK(getServerPort(&port),"Cannot get server port"); // Get server PORT
 
-    server_addr.sin_addr.s_addr = inet_addr(server_ip); 
+    // Distinguish between 'domain-dot' and 'adress-dot' formats.
+    if (res_match != 0) {
+        server_addr.sin_addr.s_addr = inet_addr(server_ip); 
+    } else {
+        struct hostent *hp = gethostbyname(server_ip);
+	CHECK(hp,"server's name not recognised",NULL);
+	memcpy (&(server_addr.sin_addr),hp->h_addr,hp->h_length);
+    }
+
     server_addr.sin_family = AF_INET;  
     server_addr.sin_port = htons(port);
 
