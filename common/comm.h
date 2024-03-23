@@ -1,11 +1,9 @@
-#include <errno.h>
+#ifndef COMM_H
+#define COMM_H
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "claves.h"
-#include "error_handling.h"
 
 int recvMessage(const int fd, const size_t size, void* data);
 
@@ -26,3 +24,5 @@ int recv_value(const int fd,
                char str[MAX_STR_SIZE],
                int* vec_size,
                double vec[MAX_VEC_SIZE]);
+
+#endif // COMM_H
