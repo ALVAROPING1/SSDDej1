@@ -66,7 +66,8 @@ static int make_request(Request* request, Response* response) {
     CHECK(getServerIp(server_ip),"Cannot get server IP"); // Get server IP
     CHECK(getServerPort(&port),"Cannot get server port"); // Get server PORT
 
-    server_addr.sin_addr.s_addr = inet_addr(server_ip); 
+    struct hostent* hp = CHECK(gethostbyname(server_ip), "Error getting host IP", NULL);
+    memcpy(&(server_addr.sin_addr), hp->h_addr, hp->h_length);
     server_addr.sin_family = AF_INET;  
     server_addr.sin_port = htons(port);
 
