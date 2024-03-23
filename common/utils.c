@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 
 #include "error_handling.h"
 #include "utils.h"
@@ -14,10 +13,10 @@ int string2int(const char* string, int* destination) {
     return 0;
 }
 
-int getServerIp(char* ip) {
-    char* var = getenv("IP_TUPLAS");
-    CHECK(var, "Error getting server IP environment variable", NULL);
-    strcpy(ip, var);
+int getServerIp(char** ip) {
+    *ip = CHECK(getenv("IP_TUPLAS"),
+                "Error getting server IP environment variable",
+                NULL);
     return 0;
 }
 

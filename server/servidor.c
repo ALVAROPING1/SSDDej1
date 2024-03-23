@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include <arpa/inet.h>
-#include <strings.h>
 #include <unistd.h>
 
 #include "../common/comm.h"
@@ -64,10 +63,6 @@ void siginthandler() {
  * @retval -1 There was an error in the execution
  */
 int main() {
-    int newsd;
-    int val;
-    socklen_t size;
-
     if (signal(SIGINT, siginthandler) == SIG_ERR) {
         perror(WARN("Error setting `SIGINT` handler"));
     };
@@ -76,8 +71,8 @@ int main() {
                "Error creating server socket",
                -1);
 
-    val = 1;
-    CHECK(setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char*) &val, sizeof(int)),
+    char val = 1;
+    CHECK(setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)),
           "Error setting reuse address option");
 
     // Get the server port environment variable.
@@ -102,9 +97,9 @@ int main() {
     printf("\033[32;1m[SERVER STARTED]\033[0m\n");
 
     while (1) {
-        size = sizeof(struct sockaddr_in);
-        newsd = accept(sd, (struct sockaddr*) &client_addr, &size);
-        if (newsd < 0) {
+        socklen_t size = sizeof(struct sockaddr_in);
+        int newsd = accept(sd, (struct sockaddr*) &client_addr, &size);
+        if (newsd == -1) {
             perror(WARN("Error en el accept"));
             continue;
         }

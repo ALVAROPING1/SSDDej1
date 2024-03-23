@@ -1,11 +1,4 @@
-#include <arpa/inet.h>
-#include <mqueue.h>
-#include <stdbool.h>
-#include <unistd.h>
-
 #include <netdb.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -53,16 +46,15 @@ static int send_message(int sd, const Request* request, Response* response) {
  */
 static int make_request(Request* request, Response* response) {
     struct sockaddr_in server_addr = {0};
-    int port;
-    char server_ip[MAX_STR_SIZE];
-
     int sd = CHECK(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP),
                    "Error creating client socket",
                    -1);
 
     // Obtain Server address
-    CHECK(getServerIp(server_ip)); // Get server IP
-    CHECK(getServerPort(&port));   // Get server PORT
+    int port;
+    char* server_ip;
+    CHECK(getServerIp(&server_ip)); // Get server IP
+    CHECK(getServerPort(&port));    // Get server PORT
 
     struct hostent* hp =
         CHECK(gethostbyname(server_ip), "Error getting server IP", NULL);

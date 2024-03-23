@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <unistd.h>
 
 #include "../common/claves.h"
@@ -35,7 +34,7 @@ int execute_request(const Request* req, Response* res) {
     case Modify:
         return modify_value(req->key, req->str, req->vec_size, req->vec);
     }
-    ASSERT(false, "Unknown operation code");
+    ASSERT(0, "Unknown operation code");
 }
 
 #undef FMT_ERROR
