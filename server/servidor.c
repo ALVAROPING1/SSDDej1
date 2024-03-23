@@ -40,7 +40,7 @@ pthread_attr_t t_attr;
 #define TRY(expr, err_msg)                                                     \
     if ((expr) != 0) {                                                         \
         perror(WARN(err_msg));                                                 \
-        error = false;                                                         \
+        error = true;                                                          \
     }
 
 /**
