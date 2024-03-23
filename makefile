@@ -7,7 +7,7 @@ LIB=-lclaves -L. -Wl,-rpath=.
 
 all: $(NAME_LIB) cliente cliente_concurrent servidor
 
-$(NAME_LIB): client/claves.c common/comm.c common/utils.o
+$(NAME_LIB): client/claves.c common/comm.c common/utils.c
 	$(CC) $(CFLAGS) -shared -o $(NAME_LIB) -fpic $^
 
 %.o: %.c
@@ -25,4 +25,5 @@ servidor: server/servidor_claves.o server/servidor_handler.o server/servidor.o c
 
 clean:
 	rm client/*.o
+	rm common/*.o
 	rm server/*.o
