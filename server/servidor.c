@@ -62,7 +62,11 @@ void siginthandler() {
  * @retval 0 Successful execution
  * @retval -1 There was an error in the execution
  */
-int main() {
+int main(int argc, char *argv[]) {
+
+    // Parameter checking.
+    if (argc != 2){ printf("Usage: ./%s <port>.",argv[0]); return EXIT_FAILURE; };
+    
     if (signal(SIGINT, siginthandler) == SIG_ERR) {
         perror(WARN("Error setting `SIGINT` handler"));
     };
@@ -75,9 +79,8 @@ int main() {
     CHECK(setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)),
           "Error setting reuse address option");
 
-    // Get the server port environment variable.
     int port;
-    CHECK(getServerPort(&port));
+    CHECK(string2int(argv[1], &port),"The port introduced isn't a number!!\n");
 
     struct sockaddr_in server_addr = {0}, client_addr;
     server_addr.sin_family = AF_INET;
