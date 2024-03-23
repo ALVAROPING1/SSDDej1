@@ -16,12 +16,12 @@
 #include "../common/messages.h"
 #include "../common/env.h"
 
-#undef FMT_ERROR
-#define FMT_ERROR(msg) ERROR("CONNECTION ERROR", msg)
-
 // ╔═══════════════════════════════════════════════════════════════════════════╗
 // ║                             Server Connection                             ║
 // ╚═══════════════════════════════════════════════════════════════════════════╝
+
+#undef FMT_ERROR
+#define FMT_ERROR(msg) ERROR("CONNECTION ERROR", msg)
 
 /**
  * @brief Sends a request to the server and receives the result
@@ -92,6 +92,9 @@ static int make_request(Request* request, Response* response) {
 // ║                            API Implementation                             ║
 // ╚═══════════════════════════════════════════════════════════════════════════╝
 
+#undef FMT_ERROR
+#define FMT_ERROR(msg) ERROR("REQUEST PROCESSING ERROR", msg)
+
 int init() {
     Request request = {.op_code = Init};
     Response response;
@@ -122,9 +125,6 @@ int get_value(const int key,
     memcpy(vec, response.vec, sizeof(*vec) * response.vec_size);
     return 0;
 }
-
-#undef FMT_ERROR
-#define FMT_ERROR(msg) ERROR("REQUEST PROCESSING ERROR", msg)
 
 int set_value(const int key,
               const char string[],
