@@ -6,7 +6,19 @@
 #include "error_handling.h"
 #include "utils.h"
 
-int msg_operation(const int fd,
+/**
+ * @brief Performs a fixed size message operation (send/receive)
+ *
+ * @param sd Socket file descriptor
+ * @param size Size in bytes of the message
+ * @param data Buffer where the message should be stored/written
+ * @param operation Function performing the operation. Should be `write` or
+ *     `read`
+ * @return Error code of the execution
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
+ */
+int msg_operation(const int sd,
                   const size_t size,
                   void* data,
                   ssize_t (*operation)(int, void*, size_t)) {
@@ -14,7 +26,7 @@ int msg_operation(const int fd,
     int remaining = size;
 
     do {
-        res = operation(fd, data, size);
+        res = operation(sd, data, size);
         remaining = remaining - res;
         data = data + res;
     } while ((remaining > 0) && (res >= 0));
@@ -23,15 +35,15 @@ int msg_operation(const int fd,
     return 0;
 }
 
-int recvMessage(const int fd, const size_t size, void* data) {
-    return msg_operation(fd, size, data, read);
+int recvMessage(const int sd, const size_t size, void* data) {
+    return msg_operation(sd, size, data, read);
 }
 
-int sendMessage(const int fd, const size_t size, const void* data) {
-    return msg_operation(fd, size, (void*) data, (ssize_t(*)()) write);
+int sendMessage(const int sd, const size_t size, const void* data) {
+    return msg_operation(sd, size, (void*) data, (ssize_t(*)()) write);
 }
 
-ssize_t readLine(const int fd, void* buffer, const size_t n) {
+ssize_t readLine(const int sd, void* buffer, const size_t n) {
     ssize_t numRead; /* num of bytes fetched by last read() */
     size_t totRead;  /* total bytes read so far */
     char* buf;
@@ -46,7 +58,7 @@ ssize_t readLine(const int fd, void* buffer, const size_t n) {
     totRead = 0;
 
     for (;;) {
-        numRead = read(fd, &ch, 1); /* read a byte */
+        numRead = read(sd, &ch, 1); /* read a byte */
 
         if (numRead == -1) {
             if (errno == EINTR) continue; /* interrupted -> restart read() */
@@ -67,38 +79,38 @@ ssize_t readLine(const int fd, void* buffer, const size_t n) {
     return totRead;
 }
 
-int send_int(const int fd, const int val) {
+int send_int(const int sd, const int val) {
     char buf[16];
     snprintf(buf, sizeof(buf), "%d", val);
-    CHECK(sendMessage(fd, strlen(buf) + 1, buf));
+    CHECK(sendMessage(sd, strlen(buf) + 1, buf));
     return 0;
 }
 
-int recv_int(const int fd, int* val) {
+int recv_int(const int sd, int* val) {
     char buf[16] = {};
-    CHECK(readLine(fd, buf, sizeof(buf)) == -1);
+    CHECK(readLine(sd, buf, sizeof(buf)) == -1);
     CHECK(string2int(buf, val));
     return 0;
 }
 
-int send_value(const int fd,
+int send_value(const int sd,
                const char str[],
                const int vec_size,
                const double vec[vec_size]) {
-    CHECK(sendMessage(fd, strlen(str) + 1, str), "Error sending string");
-    CHECK(send_int(fd, vec_size), "Error sending vector size");
-    CHECK(sendMessage(fd, vec_size * sizeof(*vec), vec),
+    CHECK(sendMessage(sd, strlen(str) + 1, str), "Error sending string");
+    CHECK(send_int(sd, vec_size), "Error sending vector size");
+    CHECK(sendMessage(sd, vec_size * sizeof(*vec), vec),
           "Error sending vector");
     return 0;
 }
 
-int recv_value(const int fd,
+int recv_value(const int sd,
                char str[MAX_STR_SIZE],
                int* vec_size,
                double vec[MAX_VEC_SIZE]) {
-    CHECK(readLine(fd, str, MAX_STR_SIZE), "Error receiving string", -1);
-    CHECK(recv_int(fd, vec_size), "Error receiving vector size");
-    CHECK(recvMessage(fd, *vec_size * sizeof(*vec), vec),
+    CHECK(readLine(sd, str, MAX_STR_SIZE), "Error receiving string", -1);
+    CHECK(recv_int(sd, vec_size), "Error receiving vector size");
+    CHECK(recvMessage(sd, *vec_size * sizeof(*vec), vec),
           "Error receiving vector");
     return 0;
 }
