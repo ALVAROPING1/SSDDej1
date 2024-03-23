@@ -14,15 +14,14 @@ int string2int(const char* string, int* destination) {
 }
 
 int getServerIp(char** ip) {
-    *ip = CHECK(getenv("IP_TUPLAS"),
-                "Error getting server IP environment variable",
-                NULL);
+    *ip = getenv("IP_TUPLAS");
+    ASSERT(*ip != NULL, "Error getting server IP environment variable");
     return 0;
 }
 
 int getServerPort(int* port) {
     char* var = getenv("PORT_TUPLAS");
-    CHECK(var, "Error getting server port environment variable", NULL);
+    ASSERT(var != NULL, "Error getting server port environment variable");
     CHECK(string2int(var, port),
           "Error converting server port environment variable to an int");
     return 0;
