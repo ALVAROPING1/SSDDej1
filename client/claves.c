@@ -1,4 +1,5 @@
 #include <netdb.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -50,11 +51,16 @@ static int make_request(Request* request, Response* response) {
                    "Error creating client socket",
                    -1);
 
-    // Obtain Server address
+    // Obtain Server IP
+    char* server_ip = getenv("IP_TUPLAS");
+    ASSERT(server_ip != NULL, "Error getting server IP environment variable");
+
+    // Obtain Server port
     int port;
-    char* server_ip;
-    CHECK(getServerIp(&server_ip)); // Get server IP
-    CHECK(getServerPort(&port));    // Get server PORT
+    char* port_env = getenv("PORT_TUPLAS");
+    ASSERT(port_env != NULL, "Error getting server port environment variable");
+    ASSERT(string2int(port_env, &port) == 0,
+           "Error converting server port environment variable to an int");
 
     struct hostent* hp =
         CHECK(gethostbyname(server_ip), "Error getting server IP", NULL);
