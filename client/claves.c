@@ -11,9 +11,9 @@
 
 #include "../common/claves.h"
 #include "../common/comm.h"
-#include "../common/env.h"
 #include "../common/error_handling.h"
 #include "../common/messages.h"
+#include "../common/utils.h"
 
 // ╔═══════════════════════════════════════════════════════════════════════════╗
 // ║                             Server Connection                             ║
