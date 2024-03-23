@@ -1,8 +1,8 @@
 #include <pthread.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -11,8 +11,8 @@
 #include <unistd.h>
 
 #include "../common/comm.h"
-#include "../common/error_handling.h"
 #include "../common/env.h"
+#include "../common/error_handling.h"
 #include "servidor_handler.h"
 
 int receive_request(int sd, Request* request) {
@@ -72,7 +72,7 @@ int main() {
     int val;
     socklen_t size;
     int port;
-    
+
     if (signal(SIGINT, siginthandler) == SIG_ERR) {
         perror(WARN("Error setting `SIGINT` handler"));
     };
@@ -84,9 +84,9 @@ int main() {
     val = 1;
     CHECK(setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char*) &val, sizeof(int)),
           "Error setting reuse address option");
-    
+
     // Get the server port environment variable.
-    CHECK(getServerPort(&port),"Cannot get server port");
+    CHECK(getServerPort(&port), "Cannot get server port");
 
     struct sockaddr_in server_addr, client_addr;
     bzero((char*) &server_addr, sizeof(server_addr));

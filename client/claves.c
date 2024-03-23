@@ -12,9 +12,9 @@
 
 #include "../common/claves.h"
 #include "../common/comm.h"
+#include "../common/env.h"
 #include "../common/error_handling.h"
 #include "../common/messages.h"
-#include "../common/env.h"
 
 // ╔═══════════════════════════════════════════════════════════════════════════╗
 // ║                             Server Connection                             ║
@@ -53,22 +53,23 @@ static int send_message(int sd, const Request* request, Response* response) {
  * @retval -1 There was an error in the execution
  */
 static int make_request(Request* request, Response* response) {
-    struct sockaddr_in server_addr; 
+    struct sockaddr_in server_addr;
     int port;
-    char server_ip[MAX_STR_SIZE];  
+    char server_ip[MAX_STR_SIZE];
 
     int sd = CHECK(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP),
                    "Error creating client socket",
                    -1);
 
     // Obtain Server address
-    bzero((char*) &server_addr, sizeof(server_addr)); 
-    CHECK(getServerIp(server_ip),"Cannot get server IP"); // Get server IP
-    CHECK(getServerPort(&port),"Cannot get server port"); // Get server PORT
+    bzero((char*) &server_addr, sizeof(server_addr));
+    CHECK(getServerIp(server_ip), "Cannot get server IP"); // Get server IP
+    CHECK(getServerPort(&port), "Cannot get server port"); // Get server PORT
 
-    struct hostent* hp = CHECK(gethostbyname(server_ip), "Error getting host IP", NULL);
+    struct hostent* hp =
+        CHECK(gethostbyname(server_ip), "Error getting host IP", NULL);
     memcpy(&(server_addr.sin_addr), hp->h_addr, hp->h_length);
-    server_addr.sin_family = AF_INET;  
+    server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
 
     CHECK(connect(sd, (struct sockaddr*) &server_addr, sizeof(server_addr)),
