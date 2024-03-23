@@ -1,6 +1,5 @@
-#include <mqueue.h>
 #include <stdbool.h>
-#include <stdio.h>
+#include <unistd.h>
 
 #include "../common/claves.h"
 #include "../common/comm.h"
@@ -21,7 +20,7 @@
  */
 int execute_request(const Request* req, Response* res) {
     // no es zona crítica ya que las operaciones se realizan de forma atómica
-    // debido al mutex incorporado en la lista enlazada.
+    // debido al sistema operativo
     switch (req->op_code) {
     case Init:
         return init();
