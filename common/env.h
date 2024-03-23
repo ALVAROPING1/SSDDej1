@@ -1,34 +1,26 @@
 #ifndef ENV_H
-#define ENV_H 1
+#define ENV_H
 
-/*
- * @brief Function that takes an string storage and stores the content of the
- * environment variable in it.
+/**
+ * @brief Gets the server IP/name as a string from the `IP_TUPLAS` environment
+ * vaariable
  *
- * @param ip_store The space where the content of the environment variable
- * "IP_TUPLAS" will be stored.
- *
- * @retval 0 Returns '0' if the variable is defined and can be obtained from the
- * environment.
- * @retval -1 Return '-1' when the variable isn't defined or it cannot be read.
- *
+ * @param ip_store The space where the result will be stored
+ * @return Error code of the operation
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int getServerIp(char* ip_store);
 
-/*
- * @brief Funtion that, given an int allocated storage, it stores the
- * port defined by the environment variable "PORT_TUPLAS".
+/**
+ * @brief Gets the server port as an int from the `PORT_TUPLAS` environment
+ * variable
  *
- * @param port_store The space where the content of the environment variable
- * "PORT_TUPLAS" will be stored.
- *
- * @retval -1 Returns '-1' if the environment doesn't contain the "PORT_TUPLAS"
- * variable or it cannot be converted to an integer number.
- *
- * @retval 0 Returns '0' if the variable is substracted of the environment and
- * succesfully converted to an integer number.
- *
+ * @param port_store The space where the result will be stored
+ * @return Error code of the operation
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
  */
 int getServerPort(int* port_store);
 
-#endif // !ENV_H
+#endif // ENV_H
