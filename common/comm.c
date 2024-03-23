@@ -1,11 +1,11 @@
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "claves.h"
+#include "comm.h"
 #include "error_handling.h"
+#include "utils.h"
 
 int msg_operation(const int fd,
                   const size_t size,
@@ -20,7 +20,7 @@ int msg_operation(const int fd,
         data = data + res;
     } while ((remaining > 0) && (res >= 0));
 
-    CHECK(res < 0);
+    CHECK(res == -1);
     return 0;
 }
 
@@ -50,17 +50,13 @@ ssize_t readLine(const int fd, void* buffer, const size_t n) {
         numRead = read(fd, &ch, 1); /* read a byte */
 
         if (numRead == -1) {
-            if (errno == EINTR) /* interrupted -> restart read() */
-                continue;
-            else return -1;        /* some other error */
-        } else if (numRead == 0) { /* EOF */
-
-            if (totRead == 0) /* no byres read; return 0 */
-                return 0;
+            if (errno == EINTR) continue; /* interrupted -> restart read() */
+            else return -1;               /* some other error */
+        } else if (numRead == 0) {        /* EOF */
+            if (totRead == 0) return 0;   /* no byres read; return 0 */
             else break;
         } else { /* numRead must be 1 if we get here*/
-            if (ch == '\n') break;
-            if (ch == '\0') break;
+            if (ch == '\0' || ch == '\n') break;
             if (totRead < n - 1) { /* discard > (n-1) bytes */
                 totRead++;
                 *buf++ = ch;
@@ -81,8 +77,8 @@ int send_int(const int fd, const int val) {
 
 int recv_int(const int fd, int* val) {
     char buf[16] = {};
-    CHECK(readLine(fd, buf, sizeof(buf)) < 0);
-    *val = atoi(buf);
+    CHECK(readLine(fd, buf, sizeof(buf)) == -1);
+    CHECK(string2int(buf, val));
     return 0;
 }
 
@@ -91,9 +87,9 @@ int send_value(const int fd,
                const int vec_size,
                const double vec[vec_size]) {
     CHECK(sendMessage(fd, strlen(str) + 1, str), "Error sending string");
-    CHECK(send_int(fd, vec_size), "Error writing vector size");
+    CHECK(send_int(fd, vec_size), "Error sending vector size");
     CHECK(sendMessage(fd, vec_size * sizeof(*vec), vec),
-          "Error writing vector");
+          "Error sending vector");
     return 0;
 }
 
@@ -101,9 +97,9 @@ int recv_value(const int fd,
                char str[MAX_STR_SIZE],
                int* vec_size,
                double vec[MAX_VEC_SIZE]) {
-    CHECK(readLine(fd, str, MAX_STR_SIZE), "Error reading string", -1);
-    CHECK(recv_int(fd, vec_size), "Error reading vector size");
+    CHECK(readLine(fd, str, MAX_STR_SIZE), "Error receiving string", -1);
+    CHECK(recv_int(fd, vec_size), "Error receiving vector size");
     CHECK(recvMessage(fd, *vec_size * sizeof(*vec), vec),
-          "Error reading vector");
+          "Error receiving vector");
     return 0;
 }

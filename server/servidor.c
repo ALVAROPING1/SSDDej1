@@ -1,13 +1,10 @@
 #include <pthread.h>
 #include <signal.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+#include <strings.h>
 #include <unistd.h>
 
 #include "../common/comm.h"
@@ -18,8 +15,7 @@
 int receive_request(int sd, Request* request) {
     CHECK(recvMessage(sd, 1, &request->op_code), "Error receiving op_code");
     CHECK(recv_int(sd, &request->key), "Error receiving key");
-    CHECK(recv_value(sd, request->str, &request->vec_size, request->vec),
-          "Error receiving values");
+    CHECK(recv_value(sd, request->str, &request->vec_size, request->vec));
     return 0;
 }
 
@@ -71,7 +67,6 @@ int main() {
     int newsd;
     int val;
     socklen_t size;
-    int port;
 
     if (signal(SIGINT, siginthandler) == SIG_ERR) {
         perror(WARN("Error setting `SIGINT` handler"));
@@ -86,12 +81,12 @@ int main() {
           "Error setting reuse address option");
 
     // Get the server port environment variable.
-    CHECK(getServerPort(&port), "Cannot get server port");
+    int port;
+    CHECK(getServerPort(&port));
 
-    struct sockaddr_in server_addr, client_addr;
-    bzero((char*) &server_addr, sizeof(server_addr));
+    struct sockaddr_in server_addr = {0}, client_addr;
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port); // TODO:
+    server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
     CHECK(bind(sd, (struct sockaddr*) &server_addr, sizeof(server_addr)),

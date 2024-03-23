@@ -1,7 +1,6 @@
 #include <arpa/inet.h>
 #include <mqueue.h>
 #include <stdbool.h>
-#include <string.h>
 #include <unistd.h>
 
 #include <netdb.h>
@@ -53,7 +52,7 @@ static int send_message(int sd, const Request* request, Response* response) {
  * @retval -1 There was an error in the execution
  */
 static int make_request(Request* request, Response* response) {
-    struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr = {0};
     int port;
     char server_ip[MAX_STR_SIZE];
 
@@ -62,12 +61,11 @@ static int make_request(Request* request, Response* response) {
                    -1);
 
     // Obtain Server address
-    bzero((char*) &server_addr, sizeof(server_addr));
-    CHECK(getServerIp(server_ip), "Cannot get server IP"); // Get server IP
-    CHECK(getServerPort(&port), "Cannot get server port"); // Get server PORT
+    CHECK(getServerIp(server_ip)); // Get server IP
+    CHECK(getServerPort(&port));   // Get server PORT
 
     struct hostent* hp =
-        CHECK(gethostbyname(server_ip), "Error getting host IP", NULL);
+        CHECK(gethostbyname(server_ip), "Error getting server IP", NULL);
     memcpy(&(server_addr.sin_addr), hp->h_addr, hp->h_length);
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);

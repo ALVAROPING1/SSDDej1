@@ -14,13 +14,13 @@ $(NAME_LIB): client/claves.c common/comm.c common/env.c
 	@echo "Compiling... $<"
 	$(CC) $(CFLAGS) -c $< -o $@
 
-cliente: client/cliente.o client/tests.o
+cliente: client/cliente.o client/tests.o $(NAME_LIB)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
-cliente_concurrent: client/cliente_concurrent.o client/tests.o
+cliente_concurrent: client/cliente_concurrent.o client/tests.o $(NAME_LIB)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
-servidor: server/servidor_claves.o server/servidor_handler.o server/servidor.o common/comm.c common/env.c
+servidor: server/servidor_claves.o server/servidor_handler.o server/servidor.o common/comm.c common/env.o common/utils.o
 	$(CC) $(CFLAGS) -lpthread -o $@ $^
 
 clean:
