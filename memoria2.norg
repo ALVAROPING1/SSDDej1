@@ -1,0 +1,147 @@
+@document.meta
+title: Memoria Práctica 2
+subtitle: Sistemas Distribuidos
+author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
+@end
+
+@embed latex
+\clearpage
+@end
+
+* Diseño
+
+** Mecanismo de almacenamiento
+
+   El mecanismo de almacenamiento de las tuplas usado en esta entrega es el
+   mismo que en la entrega anterior. Su descripción se encuentra en la memoria
+   de la primera entrega.
+
+** Protocolo de aplicación
+
+   El protocolo de aplicación usado se basa en una única secuencia de mensajes
+   para todas las operaciones. Esto se decidió para simplificar la
+   implementación, ya que requería la menor cantidad de modificaciones respecto
+   de la anterior implementación basada en colas de mensajes POSIX, y permitía
+   desacoplar las comunicaciones de las operaciones a ejecutar. En las
+   operaciones que no usan alguno de los valores, estos se envían y reciben con
+   un valor por defecto de 0 para los enteros y vectores vacíos para los
+   vectores.
+
+   Esta secuencia de mensajes consiste en serializar las estructuras de
+   /*peticiones*/ y /*respuestas*/ (`struct Request` y `struct Response` respectivamente)
+   implementadas para la anterior entrega a cadenas de caracteres, que se envían
+   por la red y se vuelven a convertir a las respectivas estructuras tras
+   recibirse en la máquina de destino. La serialización se hace convirtiendo
+   cada uno de sus campos a una cadena de caracteres y enviando cada resultado
+   independientemente. La deserialización se hace esperando a recibir cada uno
+   de los campos de manera independiente e interpretandolos como el respectivo
+   dato.
+
+   Cabe destacar las siguientes partes de este proceso:
+
+   - Las peticiones contienen el código de operación de la función a ejecutar.
+     Como hay muy pocas operaciones, esto se puede codificar con un único byte
+     y enviar sin necesidad de conversión. En el servidor, se espera recibir un
+     único byte y usa directamente sin necesidad de interpretarlo como una
+     cadena de caracteres.
+   - Ya que el valor 1 de las tuplas es una cadena de caracteres, esta se puede
+     enviar y recibir sin necesidad de conversiones tanto en las peticiones como
+     en las respuestas.
+   - El valor 2 de las tuplas (vector de `double`s) se transmite enviando primero
+     su longitud (entero codificado como una cadena de caracteres) seguido de
+     tantos `double`s como especifique esta longitud codificados como cadenas
+     de caracteres. Esto se decidió por simplicidad ya que no require usar un
+     código especial para delimitar el final del vector. Aunque el formato de
+     los `double`s está estandarizado y, por lo tanto, se podrían enviar
+     directamente sin conversión, hemos decidido usar una cadena de caracteres
+     por consistencia con el resto de mensajes enviados.
+
+** Estructura del proyecto
+
+   La estructura del proyecto es la misma que en la primera entrega, pero con
+   dos nuevos módulos en el directorio /*COMMON*/:
+
+   - Archivos `comm.c` y `comm.h`: implementan varias funciones para realizar
+     las comunicaciones entre el cliente y el servidor. Esto incluye la
+     serialización y deserialización de las componentes de las peticiones y
+     respuestas junto a su transmisión entre el cliente y el servidor.
+   - Archivos `utils.c` y `utils.h`: implementan diversas funciones simples
+     usadas por el cliente y el servidor durante el desarrollo de la aplicación.
+     Actualmente solo incluyen una función `string2int()` que convierte una
+     cadena de caracteres a un entero, y realiza una comprobación de errores en
+     caso de que la conversión falle.
+
+   La estructura de los demás archivos del proyecto está descrita en la memoria
+   de la primera entrega.
+
+* Compilación y pruebas
+
+  La compilación y las pruebas no han cambiado respecto de la anterior entrega.
+  Esta sección se es igual a la incluida en la memoria de la primera entrega, y
+  se vuelve a incluir únicamente para facilitar su referencia.
+
+** Compilación
+
+   Para compilar el proyecto, solo se necesita ejecutar `make` en el directorio
+   raíz del proyecto. Esto genera 4 archivos compilados:
+
+   - `servidor`: ejecutable del servidor.
+   - `cliente`: ejecutable del cliente que realiza las pruebas no concurrentes.
+   - `cliente_concurrent`: ejecutable del cliente que realiza las pruebas concurrentes.
+   - `libclaves.so`: biblioteca dinámica usada por los clientes que ofrece el servicio implementado.
+
+   La compilación está configurada para que los clientes busquen la biblioteca
+   dinámica `libclaves.so` en el directorio actual, por lo que no es necesario
+   modificar las variables de entorno para incluir el directorio actual en la
+   lista de directorios en los que buscar bibliotecas dinámicas.
+
+** Pruebas realizadas
+
+*** Pruebas no concurrentes
+
+    Las pruebas realizadas son las siguientes:
+
+    - Función `init()`:
+    -- Borra todos los elementos previamente almacenados
+    -- Ejecutarla múltiples veces no causa errores
+    - Función `set_value()`:
+    -- Usar una clave previamente usada resulta en un error
+    -- La clave puede tomar cualquier valor sin causar errores. Más concretamente, se han probado valores positivos, negativos, $0$, y los valores mínimos y máximos representables en el tipo de datos usado (enteros de 32 bits)
+    -- El valor `string` puede tomar cualquier longitud válida. Más concretamente, se han probado cadenas vacías y de longitud $1$, $2$, y $255$ caracteres (sin contar el byte nulo `|\0|`)
+    -- El valor string no puede tomar longitudes inválidas. Mas concretamente, se han probado cadenas de longitud superior a la máxima ($256$ o más caracteres)
+    -- El valor `vector` puede tomar todos los valores de un `double`. Mas concretamente, se han probado números positivos, negativos, enteros, racionales, infinitos, y `NaN`s
+    -- El valor `vector` puede tomar todas las longitudes válidas. Mas concretamente, se han probado longitudes de $1$, $2$, $31$, y $32$ elementos
+    -- El valor `vector` no puede tomar longitudes inválidas. Mas concretamente, se han probado longitudes de $0$, $33$, y $1024$ elementos. También se intentaron probar longitudes negativas ($-1$ y el mínimo valor de un entero de 32 bits), pero el compilador fue lo suficientemente inteligente para detectar este problema y dar un error de compilación
+    -- En todos los casos en los que se usan datos válidos, el valor escrito es el leído por la función `get_value()`
+    -- En todos los casos en los que se usan datos inválidos, las claves no se crean
+    -- Se puede crear cualquier cantidad de elementos simultáneos
+    - Función `get_value()`:
+    -- Devuelve un error si se intenta leer un elemento con una clave que no existe
+    -- El valor escrito por las funciones `set_value()` o `modify_values()` es el leído por esta función
+    -- Cuando hay múltiples archivos, los datos leídos son los que se corresponden con la clave dada
+    - Función `modify_value()`:
+    -- Devuelve un error si se intenta modificar el valor asociado a una clave que no existe
+    -- Modifica el valor correctamente, tanto cuando el tamaño de los datos aumenta como cuando disminuye
+    -- Todas las pruebas sobre los posibles valores del valor `string` y `vector` realizadas para la función `set_value()` se han repetido con esta función
+    -- En todos los casos en los que se usan datos inválidos, los elementos no se modifican
+    - Función `exist()`: funciona correctamente al comprobar tanto claves que existen como claves que no existen
+    - Función `delete_key()`:
+    -- Devuelve un error cuando se intenta borrar un elemento que no existe
+    -- Si la clave existe, se borra correctamente
+    -- Si hay múltiples claves, se borra la clave correcta
+
+    Se ha decidido no realizar pruebas de los errores en las comunicaciones debido a la dificultad de replicar estos casos.
+
+    Cabe destacar que, como algunas de las pruebas comprueban que se producen los errores correctos, es recomendable ejecutarlas redirigiendo la salida estándar de error a un fichero con `./cliente 2> /dev/null`. Esto es debido a que la librería dinámica está diseñada para imprimir mensajes de error por esta salida cuando se detecta un problema, y estos se mensajes se podrían confundir con los mensajes de fallo de las pruebas enviados por la salida estándar.
+
+*** Pruebas concurrentes
+
+    Las pruebas realizadas son las siguientes:
+
+    - Función `set_value()`:
+    -- Si varios clientes intentan crear un elemento con la misma clave a la vez, solo uno de ellos lo crea y se almacenan los datos dados por este cliente. Todos los demás clientes reciben un error.
+    -- Varios clientes pueden crear elementos con diferentes claves a la vez, y los datos se almacenan correctamente.
+    - Función `modify_value()`: varios clientes pueden modificar el valor de un mismo elemento a la vez, y en todo momento los valores almacenados son los correctos dados por uno de los clientes.
+    - Función `delete_key()`: si varios clientes intentan borrar un elemento con la misma clave a la vez, solo uno de ellos lo borra, y todos los demás clientes reciben un error.
+
+    El resto de funciones no se ven afectadas por accesos concurrentes, por lo que no es necesario hacer pruebas para ellas.
