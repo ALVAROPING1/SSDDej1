@@ -33,8 +33,8 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
    por la red y se vuelven a convertir a las respectivas estructuras tras
    recibirse en la máquina de destino. La serialización se hace convirtiendo
    cada uno de sus campos a una cadena de caracteres y enviando cada resultado
-   independientemente. La deserialización se hace esperando a recibir cada uno
-   de los campos de manera independiente e interpretandolos como el respectivo
+   independientemente. Seguidamente, se espera a recibir cada uno
+   de los campos de manera independiente e interpretarlos como el respectivo
    dato.
 
    Cabe destacar las siguientes partes de este proceso:
@@ -63,7 +63,7 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
 
    - Archivos `comm.c` y `comm.h`: implementan varias funciones para realizar
      las comunicaciones entre el cliente y el servidor. Esto incluye la
-     serialización y deserialización de las componentes de las peticiones y
+     serialización y deserialización de los componentes de las peticiones y
      respuestas junto a su transmisión entre el cliente y el servidor.
    - Archivos `utils.c` y `utils.h`: implementan diversas funciones simples
      usadas por el cliente y el servidor durante el desarrollo de la aplicación.
@@ -105,12 +105,12 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
     -- Borra todos los elementos previamente almacenados
     -- Ejecutarla múltiples veces no causa errores
     - Función `set_value()`:
-    -- Usar una clave previamente usada resulta en un error
+    -- Usar una clave previamente guardada en el sistema resulta en un error
     -- La clave puede tomar cualquier valor sin causar errores. Más concretamente, se han probado valores positivos, negativos, $0$, y los valores mínimos y máximos representables en el tipo de datos usado (enteros de 32 bits)
     -- El valor `string` puede tomar cualquier longitud válida. Más concretamente, se han probado cadenas vacías y de longitud $1$, $2$, y $255$ caracteres (sin contar el byte nulo `|\0|`)
     -- El valor string no puede tomar longitudes inválidas. Mas concretamente, se han probado cadenas de longitud superior a la máxima ($256$ o más caracteres)
     -- El valor `vector` puede tomar todos los valores de un `double`. Mas concretamente, se han probado números positivos, negativos, enteros, racionales, infinitos, y `NaN`s
-    -- El valor `vector` puede tomar todas las longitudes válidas. Mas concretamente, se han probado longitudes de $1$, $2$, $31$, y $32$ elementos
+    -- El valor `vector` puede tomar todas las longitudes válidas (`desde 1 elemento hasta 32 inclusive`). Mas concretamente, se han probado longitudes de $1$, $2$, $31$, y $32$ elementos
     -- El valor `vector` no puede tomar longitudes inválidas. Mas concretamente, se han probado longitudes de $0$, $33$, y $1024$ elementos. También se intentaron probar longitudes negativas ($-1$ y el mínimo valor de un entero de 32 bits), pero el compilador fue lo suficientemente inteligente para detectar este problema y dar un error de compilación
     -- En todos los casos en los que se usan datos válidos, el valor escrito es el leído por la función `get_value()`
     -- En todos los casos en los que se usan datos inválidos, las claves no se crean
@@ -132,7 +132,7 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
 
     Se ha decidido no realizar pruebas de los errores en las comunicaciones debido a la dificultad de replicar estos casos.
 
-    Cabe destacar que, como algunas de las pruebas comprueban que se producen los errores correctos, es recomendable ejecutarlas redirigiendo la salida estándar de error a un fichero con `./cliente 2> /dev/null`. Esto es debido a que la librería dinámica está diseñada para imprimir mensajes de error por esta salida cuando se detecta un problema, y estos se mensajes se podrían confundir con los mensajes de fallo de las pruebas enviados por la salida estándar.
+    Cabe destacar que, como algunas de las pruebas comprueban que se producen los errores correctos, es recomendable ejecutarlas redirigiendo la salida estándar de error a un fichero con `./cliente 2> /dev/null`. Esto es debido a que la librería dinámica está diseñada para imprimir mensajes de error por esta salida cuando se detecta un problema, y estos mensajes se podrían confundir con los de fallo en las pruebas enviados por la salida estándar.
 
 *** Pruebas concurrentes
 
@@ -145,3 +145,102 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
     - Función `delete_key()`: si varios clientes intentan borrar un elemento con la misma clave a la vez, solo uno de ellos lo borra, y todos los demás clientes reciben un error.
 
     El resto de funciones no se ven afectadas por accesos concurrentes, por lo que no es necesario hacer pruebas para ellas.
+
+*** Pruebas en diferentes dispositivos (misma red de area local)
+
+    Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de testear el funcionamiento del nuevo método de transmisión de mensajes empleado como lo son `los sockets`. Se empezará definiendo el contexto de dichas pruebas, se continuará con la descripción de las mismas y se finalizará con unas conclusiones sobre el rendimiento en diferentes situaciones.
+
+**** Contexto de pruebas
+
+     Para la realización de dichas pruebas, es necesario definir un contexto de ejecución físico. Este incluirá los dispositivos con los que se realizarán las pruebas y como estarán conectados para poder recivir los mensajes y mandarlos.
+     Para esta práctica, el contexto será el siguiente:
+
+     - `Dispositivo 1`: Dispositivo representando a un ordenador de sobremesa (PC convencional) con un Sistema Operativo Windows 11 instalado.
+     - `Dispositivo 2`: Dispositivo/ordenador portátil con un Sistema Operativo Linux/Debian instalado.
+     - `Conexión empleada`: Para estas pruebas, el dispostivo 1 estará conectado físicamente mediante cable de fibra óptica al router que provee la conexión a internet. Por su parte, el dispositivo 2 estará conectado a la misma red mediante un adaptador inalámbrico/wifi.
+     - `Puerto definido`: El puerto utilizado para las pruebas será el "4200".
+     - `Casos de prueba`:
+     -- Direccionamiento con IP en formato "dominio-punto".
+     -- Direccionamieto con IP en formato "decimal-punto".
+
+    Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba. Cabe a destacar que el dispositivo 1 podrá ejecutar el proyecto mediante la característica de windows 11 de proporcionar WSL (`Windows Subsistem For Linux`). Mientras que en el dispostivo 2, solo se requerirá de una conexión a internet y tener instalado `gcc`, `make` y tener los permisos suficientes para ejecutar este proyecto.
+
+**** Definición de pruebas
+
+    Las pruebas definidas para el programa "`./cliente`" son las siguientes:
+
+     - Dispositivo1(`servidor`), Dispositivo2(`cliente`) y Método de direccionamiento: formato "dominio-punto": En esta prueba, se probará el envío y recibimiento de mensajes hacia el `dispositivo 1` como servidor refiriéndose a él por su nombre de dispositivo y no por su ip.
+
+     - Dispositivo1(`cliente`), Dispositivo2(`servidor`) y Método de direccionamiento: formato "dominio-punto": Para esta prueba, se probará la comunicacón hacia el `dispositivo 2` como servidor. Se referirá a este dispositivo por su nombre de equipo y no su ip.
+
+     -- Dispositivo1(`servidor`), Dispositivo2(`cliente`) y Método de direccionamiento: formato "decimal-punto": Se testea la conexión con el `dispositivo 1` desde el cliente. Se conectarán los dispositivos por medio de su ip en dicha red local.
+
+     - Dispositivo1(`cliente`), Dispositivo2(`servidor`) y Método de direccionamiento: formato "decimal-punto": Finalidad de realizar comprobaciones de acceso al dispositivo 2 por medio de su ip.
+
+     Después de la realización de las pruebas anteriores, se replican para el programa de testeo "`./cliente_concurrent`". De esta manera se incluyen también las pruebas con múltiples clientes (múltiples conexiones al servidor) en diferentes máquinas o dispositivos a través de la red local.
+
+**** Documentación e Imágenes
+
+     Las imágenes pertenecientes a las `IP` y `HOSTNAME` de los dos dispositivos son las siguientes:
+     - Dispositivo1:
+        !{/ ./pics/Hostname_Dispo1.png}
+        !{/ ./pics/Ip_Dispo1.png}
+     
+     - Dispoositivo2:
+        !{/ ./pics/Hostname_Dispo2.png}
+        !{/ ./pics/IP_Dispo2.png}
+
+
+     Las imágenes sacadas de las pruebas son las siguientes:
+
+     - `Prueba 1`:
+     ~~ Cliente:
+        !{/ ./pics/prueba1_cliente.png}
+     ~~ Servidor:
+        !{/ ./pics/Prueba1_server.png}
+
+     - `Prueba 2`:
+     ~~ Cliente:
+        !{/ ./pics/Prueba2_cliente.png}
+     ~~ Servidor:
+        !{/ ./pics/prueba2_servidor1.png}
+        !{/ ./pics/prueba2_servidor2.png}
+
+     - `Prueba 3`:
+     ~~ Cliente:
+        !{/ ./pics/prueba3_cliente.png}
+     ~~ Servidor:
+        !{/ ./pics/Prueba3_servidor.png}
+
+     - `Prueba 4`:
+     ~~ Cliente:
+        !{/ ./pics/Prueba4_cliente.png}
+     ~~ Servidor:
+        !{/ ./pics/prueba4_servidor1.png}
+        !{/ ./pics/prueba4_servidor2.png}
+
+**** Análisis de Rendimiento (Pruebas)
+
+     A modo de simplificación, en el análisis de rendimiento solo se documentarán los tiempos correspondientes a las pruebas 1 y 2. Esto se debe a que se asume que las pruebas 3 y 4 tendrán un rendimiento similar por ejecutar el mismo programa.
+
+     Realizada esta aclaración, se procede a documentar los tiempos de ejecución del programa servidor y cliente en los dos dispositivos con el siguiente comando en la terminal: "`time <comando>`". Esta instrucción es muy útil a la hora de comparación de tiempos ya que nos muestra el tiempo de ejecución en sus estimaciones reales, del usuario y del sistema.
+
+     Las capturas son las siguientes:
+
+     - `Prueba 1`:
+     ~~ Cliente: 
+       !{/ ./pics/time_p1_client.png}
+     ~~ Servidor: 
+       !{/ ./pics/time_p1_server.png}
+
+     - `Prueba 2`:
+     ~~ Cliente:
+        !{/ ./pics/time_p2_client.png}
+     ~~ Servidor:
+        !{/ ./pics/time_p2_server.png}
+
+    Tras las siguientes imágenes, se puede concluir que el rendimiento es mucho mayor cuando el rol de servidor es asumido por el dispositivo 2 y el del cliente lo toma el dispositivo 1. Esto se debe a que en la prueba 1 (dispositivo 1 es servidor), el servidor se demora 3 minutos y 34 segundos de tiempo real en computar todas las peticiones, mientras que en la prueba 2 (dispositivo 2 como servidor) procesa las peticiones en un minuto y cuarenta y cinco segundos como tiempo total real.
+
+    
+
+
