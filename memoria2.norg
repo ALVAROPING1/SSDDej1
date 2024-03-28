@@ -170,77 +170,16 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
     Las pruebas definidas para el programa "`./cliente`" son las siguientes:
 
      - Dispositivo1(`servidor`), Dispositivo2(`cliente`) y Método de direccionamiento: formato "dominio-punto": En esta prueba, se probará el envío y recibimiento de mensajes hacia el `dispositivo 1` como servidor refiriéndose a él por su nombre de dispositivo y no por su ip.
-
      - Dispositivo1(`cliente`), Dispositivo2(`servidor`) y Método de direccionamiento: formato "dominio-punto": Para esta prueba, se probará la comunicacón hacia el `dispositivo 2` como servidor. Se referirá a este dispositivo por su nombre de equipo y no su ip.
-
      -- Dispositivo1(`servidor`), Dispositivo2(`cliente`) y Método de direccionamiento: formato "decimal-punto": Se testea la conexión con el `dispositivo 1` desde el cliente. Se conectarán los dispositivos por medio de su ip en dicha red local.
-
      - Dispositivo1(`cliente`), Dispositivo2(`servidor`) y Método de direccionamiento: formato "decimal-punto": Finalidad de realizar comprobaciones de acceso al dispositivo 2 por medio de su ip.
-
-     Después de la realización de las pruebas anteriores, se replican para el programa de testeo "`./cliente_concurrent`". De esta manera se incluyen también las pruebas con múltiples clientes (múltiples conexiones al servidor) en diferentes máquinas o dispositivos a través de la red local.
+    Después de la realización de las pruebas anteriores, se replican para el programa de testeo "`./cliente_concurrent`". De esta manera se incluyen también las pruebas con múltiples clientes (múltiples conexiones al servidor) en diferentes máquinas o dispositivos a través de la red local.
 
 **** Documentación e Imágenes
 
-     Las imágenes pertenecientes a las `IP` y `HOSTNAME` de los dos dispositivos son las siguientes:
-     - Dispositivo1:
-        !{/ ./pics/Hostname_Dispo1.png}
-        !{/ ./pics/Ip_Dispo1.png}
-     
-     - Dispoositivo2:
-        !{/ ./pics/Hostname_Dispo2.png}
-        !{/ ./pics/IP_Dispo2.png}
-
-
      Las imágenes sacadas de las pruebas son las siguientes:
 
-     - `Prueba 1`:
-     ~~ Cliente:
-        !{/ ./pics/prueba1_cliente.png}
-     ~~ Servidor:
-        !{/ ./pics/Prueba1_server.png}
-
-     - `Prueba 2`:
-     ~~ Cliente:
-        !{/ ./pics/Prueba2_cliente.png}
-     ~~ Servidor:
-        !{/ ./pics/prueba2_servidor1.png}
-        !{/ ./pics/prueba2_servidor2.png}
-
-     - `Prueba 3`:
-     ~~ Cliente:
-        !{/ ./pics/prueba3_cliente.png}
-     ~~ Servidor:
-        !{/ ./pics/Prueba3_servidor.png}
-
-     - `Prueba 4`:
-     ~~ Cliente:
-        !{/ ./pics/Prueba4_cliente.png}
-     ~~ Servidor:
-        !{/ ./pics/prueba4_servidor1.png}
-        !{/ ./pics/prueba4_servidor2.png}
-
-**** Análisis de Rendimiento (Pruebas)
-
-     A modo de simplificación, en el análisis de rendimiento solo se documentarán los tiempos correspondientes a las pruebas 1 y 2. Esto se debe a que se asume que las pruebas 3 y 4 tendrán un rendimiento similar por ejecutar el mismo programa.
-
-     Realizada esta aclaración, se procede a documentar los tiempos de ejecución del programa servidor y cliente en los dos dispositivos con el siguiente comando en la terminal: "`time <comando>`". Esta instrucción es muy útil a la hora de comparación de tiempos ya que nos muestra el tiempo de ejecución en sus estimaciones reales, del usuario y del sistema.
-
-     Las capturas son las siguientes:
-
-     - `Prueba 1`:
-     ~~ Cliente: 
-       !{/ ./pics/time_p1_client.png}
-     ~~ Servidor: 
-       !{/ ./pics/time_p1_server.png}
-
-     - `Prueba 2`:
-     ~~ Cliente:
-        !{/ ./pics/time_p2_client.png}
-     ~~ Servidor:
-        !{/ ./pics/time_p2_server.png}
-
-    Tras las siguientes imágenes, se puede concluir que el rendimiento es mucho mayor cuando el rol de servidor es asumido por el dispositivo 2 y el del cliente lo toma el dispositivo 1. Esto se debe a que en la prueba 1 (dispositivo 1 es servidor), el servidor se demora 3 minutos y 34 segundos de tiempo real en computar todas las peticiones, mientras que en la prueba 2 (dispositivo 2 como servidor) procesa las peticiones en un minuto y cuarenta y cinco segundos como tiempo total real.
-
-    
-
-
+     !{/ ./pics/prueba1_cliente.png}[Prueba 1]
+     !{/ ./pics/Prueba2_cliente.png}[Prueba 2]
+     !{/ ./pics/prueba3_cliente.png}[Prueba 3]
+     !{/ ./pics/Prueba4_cliente.png}[Prueba 4]
