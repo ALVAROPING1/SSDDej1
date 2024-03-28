@@ -76,10 +76,6 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
 
 * Compilación y pruebas
 
-  La compilación y las pruebas no han cambiado respecto de la anterior entrega.
-  Esta sección se es igual a la incluida en la memoria de la primera entrega, y
-  se vuelve a incluir únicamente para facilitar su referencia.
-
 ** Compilación
 
    Para compilar el proyecto, solo se necesita ejecutar `make` en el directorio
@@ -148,32 +144,30 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
 
 *** Pruebas en diferentes dispositivos (misma red de area local)
 
-    Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de testear el funcionamiento del nuevo método de transmisión de mensajes empleado como lo son `los sockets`. Se empezará definiendo el contexto de dichas pruebas, se continuará con la descripción de las mismas y se finalizará con unas conclusiones sobre el rendimiento en diferentes situaciones.
+    Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de probar el funcionamiento del nuevo método de transmisión de mensajes empleado (sockets).
 
 **** Contexto de pruebas
 
-     Para la realización de dichas pruebas, es necesario definir un contexto de ejecución físico. Este incluirá los dispositivos con los que se realizarán las pruebas y como estarán conectados para poder recivir los mensajes y mandarlos.
-     Para esta práctica, el contexto será el siguiente:
+     Para la realización de dichas pruebas, es necesario definir un contexto de ejecución físico. Este incluirá los dispositivos con los que se realizarán las pruebas y como estarán conectados para poder recibir los mensajes y mandarlos.
 
      - `Dispositivo 1`: Dispositivo representando a un ordenador de sobremesa (PC convencional) con un Sistema Operativo Windows 11 instalado.
      - `Dispositivo 2`: Dispositivo/ordenador portátil con un Sistema Operativo Linux/Debian instalado.
-     - `Conexión empleada`: Para estas pruebas, el dispostivo 1 estará conectado físicamente mediante cable de fibra óptica al router que provee la conexión a internet. Por su parte, el dispositivo 2 estará conectado a la misma red mediante un adaptador inalámbrico/wifi.
-     - `Puerto definido`: El puerto utilizado para las pruebas será el "4200".
-     - `Casos de prueba`:
-     -- Direccionamiento con IP en formato "dominio-punto".
-     -- Direccionamieto con IP en formato "decimal-punto".
+     - Conexión empleada: Para estas pruebas, el dispositivo 1 estará conectado físicamente mediante cable de fibra óptica al router que provee la conexión a internet. Por su parte, el dispositivo 2 estará conectado a la misma red mediante un adaptador inalámbrico/wifi.
+     - Puerto definido: El puerto utilizado para las pruebas será el $4200$.
+     - Casos de prueba: Direccionamiento con nombre de dispositivo e IP
 
-    Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba. Cabe a destacar que el dispositivo 1 podrá ejecutar el proyecto mediante la característica de windows 11 de proporcionar WSL (`Windows Subsistem For Linux`). Mientras que en el dispostivo 2, solo se requerirá de una conexión a internet y tener instalado `gcc`, `make` y tener los permisos suficientes para ejecutar este proyecto.
+     Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba. Cabe a destacar que el dispositivo 1 podrá ejecutar el proyecto mediante la característica de windows 11 de proporcionar `WSL` (Windows Subsystem For Linux), mientras que en el dispositivo 2 solo se requerirá de una conexión a internet, tener instalado `gcc` y `make`, y tener los permisos suficientes para ejecutar este proyecto.
 
 **** Definición de pruebas
 
-    Las pruebas definidas para el programa "`./cliente`" son las siguientes:
+     Las pruebas definidas para el programa `./cliente` son las siguientes:
 
-     - Dispositivo1(`servidor`), Dispositivo2(`cliente`) y Método de direccionamiento: formato "dominio-punto": En esta prueba, se probará el envío y recibimiento de mensajes hacia el `dispositivo 1` como servidor refiriéndose a él por su nombre de dispositivo y no por su ip.
-     - Dispositivo1(`cliente`), Dispositivo2(`servidor`) y Método de direccionamiento: formato "dominio-punto": Para esta prueba, se probará la comunicacón hacia el `dispositivo 2` como servidor. Se referirá a este dispositivo por su nombre de equipo y no su ip.
-     -- Dispositivo1(`servidor`), Dispositivo2(`cliente`) y Método de direccionamiento: formato "decimal-punto": Se testea la conexión con el `dispositivo 1` desde el cliente. Se conectarán los dispositivos por medio de su ip en dicha red local.
-     - Dispositivo1(`cliente`), Dispositivo2(`servidor`) y Método de direccionamiento: formato "decimal-punto": Finalidad de realizar comprobaciones de acceso al dispositivo 2 por medio de su ip.
-    Después de la realización de las pruebas anteriores, se replican para el programa de testeo "`./cliente_concurrent`". De esta manera se incluyen también las pruebas con múltiples clientes (múltiples conexiones al servidor) en diferentes máquinas o dispositivos a través de la red local.
+     ~ `Dispositivo 1` (servidor), `Dispositivo 2` (cliente) y Método de direccionamiento: En esta prueba, se probará el envío y recepción de mensajes hacia el `dispositivo 1` como servidor refiriéndose a él por su nombre de dispositivo y no por su IP.
+     ~ `Dispositivo 1` (cliente), `Dispositivo 2` (servidor) y Método de direccionamiento: Para esta prueba, se probará la comunicación hacia el `dispositivo 2` como servidor. Se referirá a este dispositivo por su nombre de equipo y no su IP.
+     ~ `Dispositivo 1` (servidor), `Dispositivo 2` (cliente) y Método de direccionamiento: Se prueba la conexión con el `dispositivo 1` desde el cliente. Se conectarán los dispositivos por medio de su IP en dicha red local.
+     ~ `Dispositivo 1` (cliente), `Dispositivo 2` (servidor) y Método de direccionamiento: Esta prueba tiene la finalidad de realizar comprobaciones de acceso al dispositivo 2 por medio de su IP.
+
+     Después de la realización de las pruebas anteriores, se replican para el programa de pruebas `./cliente_concurrent`. De esta manera se incluyen también las pruebas con múltiples clientes (múltiples conexiones al servidor) en diferentes máquinas o dispositivos a través de la red local.
 
 **** Documentación e Imágenes
 
