@@ -110,7 +110,7 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
     -- El valor `string` puede tomar cualquier longitud válida. Más concretamente, se han probado cadenas vacías y de longitud $1$, $2$, y $255$ caracteres (sin contar el byte nulo `|\0|`)
     -- El valor string no puede tomar longitudes inválidas. Mas concretamente, se han probado cadenas de longitud superior a la máxima ($256$ o más caracteres)
     -- El valor `vector` puede tomar todos los valores de un `double`. Mas concretamente, se han probado números positivos, negativos, enteros, racionales, infinitos, y `NaN`s
-    -- El valor `vector` puede tomar todas las longitudes válidas (`desde 1 elemento hasta 32 inclusive`). Mas concretamente, se han probado longitudes de $1$, $2$, $31$, y $32$ elementos
+    -- El valor `vector` puede tomar todas las longitudes válidas (desde 1 elemento hasta 32 inclusive). Mas concretamente, se han probado longitudes de $1$, $2$, $31$, y $32$ elementos
     -- El valor `vector` no puede tomar longitudes inválidas. Mas concretamente, se han probado longitudes de $0$, $33$, y $1024$ elementos. También se intentaron probar longitudes negativas ($-1$ y el mínimo valor de un entero de 32 bits), pero el compilador fue lo suficientemente inteligente para detectar este problema y dar un error de compilación
     -- En todos los casos en los que se usan datos válidos, el valor escrito es el leído por la función `get_value()`
     -- En todos los casos en los que se usan datos inválidos, las claves no se crean
