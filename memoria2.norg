@@ -93,87 +93,83 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
 
 ** Pruebas realizadas
 
-*** Pruebas no concurrentes
+   Las pruebas realizadas en esta entrega son las mismas que en la entrega
+   anterior. Su descripción se encuentra en la memoria de la primera entrega.
 
-    Las pruebas realizadas son las siguientes:
-
-    - Función `init()`:
-    -- Borra todos los elementos previamente almacenados
-    -- Ejecutarla múltiples veces no causa errores
-    - Función `set_value()`:
-    -- Usar una clave previamente guardada en el sistema resulta en un error
-    -- La clave puede tomar cualquier valor sin causar errores. Más concretamente, se han probado valores positivos, negativos, $0$, y los valores mínimos y máximos representables en el tipo de datos usado (enteros de 32 bits)
-    -- El valor `string` puede tomar cualquier longitud válida. Más concretamente, se han probado cadenas vacías y de longitud $1$, $2$, y $255$ caracteres (sin contar el byte nulo `|\0|`)
-    -- El valor string no puede tomar longitudes inválidas. Mas concretamente, se han probado cadenas de longitud superior a la máxima ($256$ o más caracteres)
-    -- El valor `vector` puede tomar todos los valores de un `double`. Mas concretamente, se han probado números positivos, negativos, enteros, racionales, infinitos, y `NaN`s
-    -- El valor `vector` puede tomar todas las longitudes válidas (desde 1 elemento hasta 32 inclusive). Mas concretamente, se han probado longitudes de $1$, $2$, $31$, y $32$ elementos
-    -- El valor `vector` no puede tomar longitudes inválidas. Mas concretamente, se han probado longitudes de $0$, $33$, y $1024$ elementos. También se intentaron probar longitudes negativas ($-1$ y el mínimo valor de un entero de 32 bits), pero el compilador fue lo suficientemente inteligente para detectar este problema y dar un error de compilación
-    -- En todos los casos en los que se usan datos válidos, el valor escrito es el leído por la función `get_value()`
-    -- En todos los casos en los que se usan datos inválidos, las claves no se crean
-    -- Se puede crear cualquier cantidad de elementos simultáneos
-    - Función `get_value()`:
-    -- Devuelve un error si se intenta leer un elemento con una clave que no existe
-    -- El valor escrito por las funciones `set_value()` o `modify_values()` es el leído por esta función
-    -- Cuando hay múltiples archivos, los datos leídos son los que se corresponden con la clave dada
-    - Función `modify_value()`:
-    -- Devuelve un error si se intenta modificar el valor asociado a una clave que no existe
-    -- Modifica el valor correctamente, tanto cuando el tamaño de los datos aumenta como cuando disminuye
-    -- Todas las pruebas sobre los posibles valores del valor `string` y `vector` realizadas para la función `set_value()` se han repetido con esta función
-    -- En todos los casos en los que se usan datos inválidos, los elementos no se modifican
-    - Función `exist()`: funciona correctamente al comprobar tanto claves que existen como claves que no existen
-    - Función `delete_key()`:
-    -- Devuelve un error cuando se intenta borrar un elemento que no existe
-    -- Si la clave existe, se borra correctamente
-    -- Si hay múltiples claves, se borra la clave correcta
-
-    Se ha decidido no realizar pruebas de los errores en las comunicaciones debido a la dificultad de replicar estos casos.
-
-    Cabe destacar que, como algunas de las pruebas comprueban que se producen los errores correctos, es recomendable ejecutarlas redirigiendo la salida estándar de error a un fichero con `./cliente 2> /dev/null`. Esto es debido a que la librería dinámica está diseñada para imprimir mensajes de error por esta salida cuando se detecta un problema, y estos mensajes se podrían confundir con los de fallo en las pruebas enviados por la salida estándar.
-
-*** Pruebas concurrentes
-
-    Las pruebas realizadas son las siguientes:
-
-    - Función `set_value()`:
-    -- Si varios clientes intentan crear un elemento con la misma clave a la vez, solo uno de ellos lo crea y se almacenan los datos dados por este cliente. Todos los demás clientes reciben un error.
-    -- Varios clientes pueden crear elementos con diferentes claves a la vez, y los datos se almacenan correctamente.
-    - Función `modify_value()`: varios clientes pueden modificar el valor de un mismo elemento a la vez, y en todo momento los valores almacenados son los correctos dados por uno de los clientes.
-    - Función `delete_key()`: si varios clientes intentan borrar un elemento con la misma clave a la vez, solo uno de ellos lo borra, y todos los demás clientes reciben un error.
-
-    El resto de funciones no se ven afectadas por accesos concurrentes, por lo que no es necesario hacer pruebas para ellas.
-
-*** Pruebas en diferentes dispositivos (misma red de area local)
+** Ejecución de las pruebas en diferentes dispositivos
 
     Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de probar el funcionamiento del nuevo método de transmisión de mensajes empleado (sockets).
 
-**** Contexto de pruebas
+*** Contexto de pruebas
 
      Para la realización de dichas pruebas, es necesario definir un contexto de ejecución físico. Este incluirá los dispositivos con los que se realizarán las pruebas y como estarán conectados para poder recibir los mensajes y mandarlos.
 
-     - `Dispositivo 1`: Dispositivo representando a un ordenador de sobremesa (PC convencional) con un Sistema Operativo Windows 11 instalado.
-     - `Dispositivo 2`: Dispositivo/ordenador portátil con un Sistema Operativo Linux/Debian instalado.
-     - Conexión empleada: Para estas pruebas, el dispositivo 1 estará conectado físicamente mediante cable de fibra óptica al router que provee la conexión a internet. Por su parte, el dispositivo 2 estará conectado a la misma red mediante un adaptador inalámbrico/wifi.
+     - Dispositivos: tanto el cliente como el servidor se ejecutaran en un sistema operativo Linux
+     - Conexión empleada: Para estas pruebas, el primer dispositivo estará conectado físicamente mediante cable de fibra óptica al router que provee la conexión a internet. Por su parte, el segundo dispositivo estará conectado a la misma red mediante un adaptador inalámbrico/wifi.
      - Puerto definido: El puerto utilizado para las pruebas será el $4200$.
      - Casos de prueba: Direccionamiento con nombre de dispositivo e IP
 
-     Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba. Cabe a destacar que el dispositivo 1 podrá ejecutar el proyecto mediante la característica de windows 11 de proporcionar `WSL` (Windows Subsystem For Linux), mientras que en el dispositivo 2 solo se requerirá de una conexión a internet, tener instalado `gcc` y `make`, y tener los permisos suficientes para ejecutar este proyecto.
+     Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba.
 
-**** Definición de pruebas
+*** Definición de pruebas
 
-     Las pruebas definidas para el programa `./cliente` son las siguientes:
+     Las pruebas a ejecutar son las siguientes:
 
      ~ `Dispositivo 1` (servidor), `Dispositivo 2` (cliente) y Método de direccionamiento: En esta prueba, se probará el envío y recepción de mensajes hacia el `dispositivo 1` como servidor refiriéndose a él por su nombre de dispositivo y no por su IP.
      ~ `Dispositivo 1` (cliente), `Dispositivo 2` (servidor) y Método de direccionamiento: Para esta prueba, se probará la comunicación hacia el `dispositivo 2` como servidor. Se referirá a este dispositivo por su nombre de equipo y no su IP.
      ~ `Dispositivo 1` (servidor), `Dispositivo 2` (cliente) y Método de direccionamiento: Se prueba la conexión con el `dispositivo 1` desde el cliente. Se conectarán los dispositivos por medio de su IP en dicha red local.
      ~ `Dispositivo 1` (cliente), `Dispositivo 2` (servidor) y Método de direccionamiento: Esta prueba tiene la finalidad de realizar comprobaciones de acceso al dispositivo 2 por medio de su IP.
 
-     Después de la realización de las pruebas anteriores, se replican para el programa de pruebas `./cliente_concurrent`. De esta manera se incluyen también las pruebas con múltiples clientes (múltiples conexiones al servidor) en diferentes máquinas o dispositivos a través de la red local.
+     Estas pruebas se realizarán tanto para las pruebas no concurrentes (`./cliente`) como para las pruebas concurrentes (`./cliente_concurrent`). De esta manera se incluyen también las pruebas con múltiples clientes (múltiples conexiones al servidor) en diferentes máquinas o dispositivos a través de la red local.
 
-**** Documentación e Imágenes
+*** Documentación e Imágenes
 
-     Las imágenes sacadas de las pruebas son las siguientes:
+    Las imágenes sacadas de las pruebas no concurrentes son las siguientes:
 
-     !{/ ./pics/prueba1_cliente.png}[Prueba 1]
-     !{/ ./pics/Prueba2_cliente.png}[Prueba 2]
-     !{/ ./pics/prueba3_cliente.png}[Prueba 3]
-     !{/ ./pics/Prueba4_cliente.png}[Prueba 4]
+    @embed latex
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{pics/prueba1_cliente.png}
+        \caption{Prueba 1}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{pics/Prueba2_cliente.png}
+        \caption{Prueba 1}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{pics/prueba3_cliente.png}
+        \caption{Prueba 1}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{pics/Prueba4_cliente.png}
+        \caption{Prueba 1}
+    \end{figure}
+    @end
+
+    Las imágenes sacadas de las pruebas concurrentes son las siguientes:
+
+    @embed latex
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{pics/prueba1.jpg}
+        \caption{Prueba 1}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{pics/Prueba2.png}
+        \caption{Prueba 1}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.7\textwidth]{pics/prueba3.jpg}
+        \caption{Prueba 1}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.7\textwidth]{pics/Prueba4.png}
+        \caption{Prueba 1}
+    \end{figure}
+    @end

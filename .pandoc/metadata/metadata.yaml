@@ -58,4 +58,6 @@ header-includes: |
     \newcommand\subtitle[1]{\renewcommand\@subtitle{#1}}
     \newcommand\@subtitle{\@latex@error{No \noexpand\subtitle given}\@ehc}
     \makeatother
+
+    \usepackage{float}
     ```
