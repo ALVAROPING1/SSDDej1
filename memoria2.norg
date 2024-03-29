@@ -130,22 +130,22 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{pics/prueba1_cliente.png}
-        \caption{Prueba 1}
+        \caption{Prueba 1: Cliente}
     \end{figure}
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{pics/Prueba2_cliente.png}
-        \caption{Prueba 1}
+        \caption{Prueba 2: Cliente}
     \end{figure}
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{pics/prueba3_cliente.png}
-        \caption{Prueba 1}
+        \caption{Prueba 3: Cliente}
     \end{figure}
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{pics/Prueba4_cliente.png}
-        \caption{Prueba 1}
+        \caption{Prueba 4: Cliente}
     \end{figure}
     @end
 
@@ -160,16 +160,16 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\textwidth]{pics/Prueba2.png}
-        \caption{Prueba 1}
+        \caption{Prueba 2}
     \end{figure}
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.7\textwidth]{pics/prueba3.jpg}
-        \caption{Prueba 1}
+        \caption{Prueba 3}
     \end{figure}
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.7\textwidth]{pics/Prueba4.png}
-        \caption{Prueba 1}
+        \caption{Prueba 4}
     \end{figure}
     @end
