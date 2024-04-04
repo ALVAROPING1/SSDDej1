@@ -65,7 +65,7 @@ void siginthandler() {
 int main(int argc, char* argv[]) {
     // Parameter checking.
     if (argc != 2) {
-        printf("Usage: ./%s <port>.", argv[0]);
+        printf("Usage: %s <port>.", argv[0]);
         return EXIT_FAILURE;
     };
 
