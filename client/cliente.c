@@ -1,3 +1,4 @@
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 
@@ -113,6 +114,26 @@ TEST(set_get) {
     ASSERT_EQ(get_value(0, str_res, &vec_size_res, vec_res), 0);
     ASSERT_EQ(str, str_res);
     ASSERT_EQ_VEC(vec_res, vec_size_res, vec, 4);
+    return 0;
+}
+
+TEST(set_get_long_serialization) {
+    char str[MAX_STR_SIZE] = "";
+    memset(str, 'a', sizeof(str) - 1);
+    double vec[MAX_VEC_SIZE];
+    for (int i = 0; i < MAX_VEC_SIZE; ++i) {
+        vec[i] = DBL_MAX;
+    }
+
+    char str_res[MAX_STR_SIZE];
+    int vec_size_res;
+    double vec_res[MAX_VEC_SIZE];
+
+    ASSERT_EQ(init(), 0);
+    ASSERT_EQ(set_value(0, str, MAX_VEC_SIZE, vec), 0);
+    ASSERT_EQ(get_value(0, str_res, &vec_size_res, vec_res), 0);
+    ASSERT_EQ(str, str_res);
+    ASSERT_EQ_VEC(vec_res, vec_size_res, vec, MAX_VEC_SIZE);
     return 0;
 }
 
@@ -313,6 +334,7 @@ int main() {
     set_vec_values();
     set_many_elements();
     set_get();
+    set_get_long_serialization();
     get_empty();
     get_many_elements();
     modify_none();
