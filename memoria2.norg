@@ -95,6 +95,10 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
 
    Las pruebas realizadas en esta entrega son las mismas que en la entrega
    anterior. Su descripción se encuentra en la memoria de la primera entrega.
+   Cabe destacar que se ha añadido un nuevo test no concurrente para las
+   funciones `set_value()` y `get_value()` que usa datos válidos con el mayor
+   tamaño posible tras la serialización en las comunicaciones para comprobar que
+   todos los buffers usados para esto tienen un tamaño lo suficientemente grande.
 
 ** Ejecución de las pruebas en diferentes dispositivos
 
