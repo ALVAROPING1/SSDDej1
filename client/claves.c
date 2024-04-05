@@ -51,10 +51,6 @@ static int make_request(Request* request, Response* response) {
                    "Error creating client socket",
                    -1);
 
-    // Obtain Server IP
-    char* server_ip = getenv("IP_TUPLAS");
-    ASSERT(server_ip != NULL, "Error getting server IP environment variable");
-
     // Obtain Server port
     int port;
     char* port_env = getenv("PORT_TUPLAS");
@@ -62,17 +58,21 @@ static int make_request(Request* request, Response* response) {
     ASSERT(string2int(port_env, &port) == 0,
            "Error converting server port environment variable to an int");
 
+    // Obtain Server IP
+    char* server_ip = getenv("IP_TUPLAS");
+    ASSERT(server_ip != NULL, "Error getting server IP environment variable");
     struct hostent* hp =
         CHECK(gethostbyname(server_ip), "Error getting server IP", NULL);
     memcpy(&(server_addr.sin_addr), hp->h_addr, hp->h_length);
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
 
+    // Connect to the server
     CHECK(connect(sd, (struct sockaddr*) &server_addr, sizeof(server_addr)),
           "Error connecting to server");
-
+    // Send the request and receive the response
     if (send_message(sd, request, response) == -1) { response->ret_value = -1; }
-
+    // Close the socket
     CHECK(close(sd), "Error closing client socket");
     return response->ret_value;
 }

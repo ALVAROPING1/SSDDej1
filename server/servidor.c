@@ -12,7 +12,7 @@
 #include "servidor_handler.h"
 
 int receive_request(int sd, Request* request) {
-    //printf("Recibiendo request");
+    // printf("Recibiendo request");
     CHECK(recvMessage(sd, 1, &request->op_code), "Error receiving op_code");
     CHECK(recv_int(sd, &request->key), "Error receiving key");
     CHECK(recv_value(sd, request->str, &request->vec_size, request->vec));
@@ -70,30 +70,33 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     };
 
+    // Get the port
     int port;
     CHECK(string2int(argv[1], &port), "Error converting the port to a number");
 
+    // Setup `SIGINT` handler
     if (signal(SIGINT, siginthandler) == SIG_ERR) {
         perror(WARN("Error setting `SIGINT` handler"));
     };
 
+    // Create socket and set its options
     sd = CHECK(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP),
                "Error creating server socket",
                -1);
-
     char val = 1;
     CHECK(setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)),
           "Error setting reuse address option");
 
+    // Setup bind and listen
     struct sockaddr_in server_addr = {0}, client_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = INADDR_ANY;
-
     CHECK(bind(sd, (struct sockaddr*) &server_addr, sizeof(server_addr)),
           "Error binding server socket");
     CHECK(listen(sd, SOMAXCONN), "Error setting listen socket");
 
+    // Setup thread attributes
     pthread_attr_t t_attr;
     CHECK(pthread_attr_init(&t_attr),
           "Error creating thread attributes struct");
@@ -102,18 +105,20 @@ int main(int argc, char* argv[]) {
 
     printf("\033[32;1m[SERVER STARTED]\033[0m\n");
 
+    // Main loop
     while (1) {
+        // Wait for a request and accept it
         socklen_t size = sizeof(struct sockaddr_in);
         int newsd = accept(sd, (struct sockaddr*) &client_addr, &size);
         if (newsd == -1) {
             perror(WARN("Error en el accept"));
             continue;
         }
-
-        pthread_t thread;
         printf("Conexión aceptada de IP: %s y puerto: %d\n",
                inet_ntoa(client_addr.sin_addr),
                ntohs(client_addr.sin_port));
+        // Create a thread to handle it
+        pthread_t thread;
         if (pthread_create(
                 &thread, &t_attr, setup_request, (void*) (long) newsd) != 0) {
             perror(WARN("Error creating thread to handle connection"));
