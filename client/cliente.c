@@ -122,7 +122,7 @@ TEST(set_get_long_serialization) {
     memset(str, 'a', sizeof(str) - 1);
     double vec[MAX_VEC_SIZE];
     for (int i = 0; i < MAX_VEC_SIZE; ++i) {
-        vec[i] = DBL_MAX;
+        vec[i] = -DBL_MAX;
     }
 
     char str_res[MAX_STR_SIZE];
