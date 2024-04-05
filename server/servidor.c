@@ -12,6 +12,7 @@
 #include "servidor_handler.h"
 
 int receive_request(int sd, Request* request) {
+    //printf("Recibiendo request");
     CHECK(recvMessage(sd, 1, &request->op_code), "Error receiving op_code");
     CHECK(recv_int(sd, &request->key), "Error receiving key");
     CHECK(recv_value(sd, request->str, &request->vec_size, request->vec));

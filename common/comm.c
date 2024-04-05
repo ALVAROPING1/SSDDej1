@@ -1,10 +1,68 @@
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include "comm.h"
+#include "claves.h"
 #include "error_handling.h"
 #include "utils.h"
+
+#define DBL_MAX_SIZE 24
+
+/**
+ * @brief Converts a vector of doubles to a serialized string.
+ *
+ * @param str_m Position of memory where the serialized vector
+ * will be stored.
+ *
+ * @param len length of the vector to be serialized.
+ *
+ * @param v_m The actual position of the vector that will be serialized.
+ *
+ * @retval 0 Successfull execution
+ * @retval -1 Error value.
+ */
+int serializeVector(const int sd, int len, const double *v_m){
+  char str_num[DBL_MAX_SIZE+1] = "";
+
+  for(int i = 0; i < len; i++){
+    ASSERT(sprintf(str_num, "%.17le",v_m[i]) <= DBL_MAX_SIZE, "Los caracteres han sido truncados");
+    CHECK(sendMessage(sd, DBL_MAX_SIZE+1, str_num),"Error sending component");
+  }
+  
+  //printf("El vector serializado es: %s",result_str);
+  return 0;
+}
+
+
+/**
+ * @brief Given a string, it extracts the vector components
+ * to a pre-allocated memory buffer.
+ *
+ * @param stream Position of memory where the serialized vector
+ * is located.
+ *
+ * @param len length of the serialized vector.
+ *
+ * @param v_m The position for the vector to ve stored.
+ *
+ * @retval 0 Successfull execution
+ * @retval -1 Error value.
+ */
+int deserializeVector(const int sd, int len, double *vec_m) {  
+  char vec_elem[DBL_MAX_SIZE+1] = "";
+  
+  for (int i = 0;i < len;i++){
+    CHECK(recvMessage(sd, DBL_MAX_SIZE+1, vec_elem),"El elemento no es recivido");
+    CHECK(sscanf(vec_elem, "%le",vec_m+i) >= DBL_MAX_SIZE+1,"El elemento es truncado");
+  }
+  
+  return 0;
+}
+
 
 /**
  * @brief Performs a fixed size message operation (send/receive)
@@ -28,8 +86,8 @@ int msg_operation(const int sd,
     do {
         res = operation(sd, data, size);
         remaining = remaining - res;
-        data = data + res;
-    } while ((remaining > 0) && (res >= 0));
+data = data + res;
+} while ((remaining > 0) && (res >= 0));
 
     CHECK(res == -1);
     return 0;
@@ -97,10 +155,14 @@ int send_value(const int sd,
                const char str[],
                const int vec_size,
                const double vec[vec_size]) {
-    CHECK(sendMessage(sd, strlen(str) + 1, str), "Error sending string");
-    CHECK(send_int(sd, vec_size), "Error sending vector size");
-    CHECK(sendMessage(sd, vec_size * sizeof(*vec), vec),
-          "Error sending vector");
+
+    CHECK(sendMessage(sd, strlen(str) + 1, str),
+          "Error sending string");
+    CHECK(send_int(sd, vec_size), 
+          "Error sending vector size");
+    CHECK(serializeVector(sd, vec_size, vec),
+          "Error serializing vector (send_value)");
+    //printf("El valor a enviar es: %s",serial);
     return 0;
 }
 
@@ -108,9 +170,13 @@ int recv_value(const int sd,
                char str[MAX_STR_SIZE],
                int* vec_size,
                double vec[MAX_VEC_SIZE]) {
-    CHECK(readLine(sd, str, MAX_STR_SIZE), "Error receiving string", -1);
-    CHECK(recv_int(sd, vec_size), "Error receiving vector size");
-    CHECK(recvMessage(sd, *vec_size * sizeof(*vec), vec),
-          "Error receiving vector");
+
+    CHECK(readLine(sd, str, MAX_STR_SIZE), 
+          "Error receiving string", -1);
+    CHECK(recv_int(sd, vec_size), 
+          "Error receiving vector size"); 
+    CHECK(deserializeVector(sd, *vec_size, vec),
+          "Error deserializing vector (recv_value)");
+
     return 0;
 }
