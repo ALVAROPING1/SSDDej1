@@ -9,6 +9,7 @@
 #include "error_handling.h"
 #include "utils.h"
 
+#define INT_MAX_SIZE 16
 #define DBL_MAX_SIZE 32
 
 // ╔═══════════════════════════════════════════════════════════════════════════╗
@@ -104,14 +105,14 @@ ssize_t readLine(const int sd, void* buffer, const size_t n) {
 // ╚═══════════════════════════════════════════════════════════════════════════╝
 
 int send_int(const int sd, const int val) {
-    char buf[16];
+    char buf[INT_MAX_SIZE];
     snprintf(buf, sizeof(buf), "%d", val);
     CHECK(sendMessage(sd, strlen(buf) + 1, buf));
     return 0;
 }
 
 int recv_int(const int sd, int* val) {
-    char buf[16] = {};
+    char buf[INT_MAX_SIZE] = {};
     CHECK(readLine(sd, buf, sizeof(buf)) == -1);
     CHECK(string2int(buf, val));
     return 0;
@@ -128,10 +129,10 @@ int recv_int(const int sd, int* val) {
  * @retval -1 There was an error in the execution
  */
 int send_vector(const int sd, int len, const double vec[len]) {
-    char str_num[DBL_MAX_SIZE + 1];
+    char buf[DBL_MAX_SIZE + 1];
     for (int i = 0; i < len; i++) {
-        snprintf(str_num, sizeof(str_num), "%.17le", vec[i]);
-        CHECK(sendMessage(sd, DBL_MAX_SIZE + 1, str_num),
+        snprintf(buf, sizeof(buf), "%.17le", vec[i]);
+        CHECK(sendMessage(sd, strlen(buf) + 1, buf),
               "Error sending vector component");
     }
     return 0;
@@ -148,14 +149,12 @@ int send_vector(const int sd, int len, const double vec[len]) {
  * @retval -1 There was an error in the execution
  */
 int recv_vector(const int sd, int len, double vec[len]) {
-    char vec_elem[DBL_MAX_SIZE + 1];
-
+    char buf[DBL_MAX_SIZE + 1];
     for (int i = 0; i < len; i++) {
-        CHECK(recvMessage(sd, DBL_MAX_SIZE + 1, vec_elem),
+        CHECK(readLine(sd, buf, sizeof(buf)) == -1,
               "Error receiving vector component");
-        sscanf(vec_elem, "%le", vec + i);
+        sscanf(buf, "%le", &vec[i]);
     }
-
     return 0;
 }
 
