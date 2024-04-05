@@ -90,6 +90,17 @@ int sendMessage(const int sd, const size_t size, const void* data) {
     return msg_operation(sd, size, (void*) data, (ssize_t(*)()) write);
 }
 
+/**
+ * @brief Receives a variable length message terminated by a null terminator
+ * (`\0`) or a new line character (`\n`). The terminator byte isn't returned
+ *
+ * @param sd Socket file descriptor
+ * @param buffer Buffer where the message should be stored
+ * @param n Size of the buffer. Further bytes will be discarded
+ * @return Error code of the execution
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
+ */
 ssize_t readLine(const int sd, void* buffer, const size_t n) {
     ssize_t numRead; /* num of bytes fetched by last read() */
     size_t totRead;  /* total bytes read so far */

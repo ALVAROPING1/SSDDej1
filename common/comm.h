@@ -30,19 +30,6 @@ int recvMessage(const int sd, const size_t size, void* data);
 int sendMessage(const int sd, const size_t size, const void* data);
 
 /**
- * @brief Receives a variable length message terminated by a null terminator
- * (`\0`) or a new line character (`\n`). The terminator byte isn't returned
- *
- * @param sd Socket file descriptor
- * @param buffer Buffer where the message should be stored
- * @param n Size of the buffer. Further bytes will be discarded
- * @return Error code of the execution
- * @retval 0 Successful execution
- * @retval -1 There was an error in the execution
- */
-ssize_t readLine(const int sd, void* buffer, const size_t n);
-
-/**
  * @brief Receives an int sent as a string
  *
  * @param sd Socket file descriptor
