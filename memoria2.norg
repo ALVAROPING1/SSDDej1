@@ -54,7 +54,13 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar - 100475860
      código especial para delimitar el final del vector. Aunque el formato de
      los `double`s está estandarizado y, por lo tanto, se podrían enviar
      directamente sin conversión, hemos decidido usar una cadena de caracteres
-     por consistencia con el resto de mensajes enviados.
+     por consistencia con el resto de mensajes enviados. La conversión de los
+     `double`s a cadenas de caracteres se hace usando un formato en notación
+     científica con 17 decimales de precisión, lo cual es suficiente para
+     representar unívocamente cada posible valor. Cabe destacar que esto no
+     funciona para los valores `NaN`, ya que hay $2^{64 - e} = 2^{64 - 11} = 2^{53}$
+     codificaciones distintas de estos valores pero todos ellos se representan
+     con la cadena `nan`.
 
 ** Estructura del proyecto
 
