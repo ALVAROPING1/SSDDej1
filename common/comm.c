@@ -11,47 +11,9 @@
 
 #define DBL_MAX_SIZE 32
 
-/**
- * @brief Sends a vector of doubles as strings
- *
- * @param sd Socket file descriptor
- * @param len Size of the vector
- * @param vec Buffer with the vector
- * @return Error code of the execution
- * @retval 0 Successful execution
- * @retval -1 There was an error in the execution
- */
-int send_vector(const int sd, int len, const double vec[len]) {
-    char str_num[DBL_MAX_SIZE + 1];
-    for (int i = 0; i < len; i++) {
-        snprintf(str_num, sizeof(str_num), "%.17le", vec[i]);
-        CHECK(sendMessage(sd, DBL_MAX_SIZE + 1, str_num),
-              "Error sending vector component");
-    }
-    return 0;
-}
-
-/**
- * @brief Receives a vector of doubles as strings
- *
- * @param sd Socket file descriptor
- * @param len Expected size of the vector
- * @param vec Buffer in which the vector should be stored
- * @return Error code of the execution
- * @retval 0 Successful execution
- * @retval -1 There was an error in the execution
- */
-int recv_vector(const int sd, int len, double vec[len]) {
-    char vec_elem[DBL_MAX_SIZE + 1];
-
-    for (int i = 0; i < len; i++) {
-        CHECK(recvMessage(sd, DBL_MAX_SIZE + 1, vec_elem),
-              "Error receiving vector component");
-        sscanf(vec_elem, "%le", vec + i);
-    }
-
-    return 0;
-}
+// ╔═══════════════════════════════════════════════════════════════════════════╗
+// ║                           Connection Primitives                           ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
 
 /**
  * @brief Performs a fixed size message operation (send/receive)
@@ -137,6 +99,10 @@ ssize_t readLine(const int sd, void* buffer, const size_t n) {
     return totRead;
 }
 
+// ╔═══════════════════════════════════════════════════════════════════════════╗
+// ║                           Send Data Operations                            ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
+
 int send_int(const int sd, const int val) {
     char buf[16];
     snprintf(buf, sizeof(buf), "%d", val);
@@ -148,6 +114,48 @@ int recv_int(const int sd, int* val) {
     char buf[16] = {};
     CHECK(readLine(sd, buf, sizeof(buf)) == -1);
     CHECK(string2int(buf, val));
+    return 0;
+}
+
+/**
+ * @brief Sends a vector of doubles as strings
+ *
+ * @param sd Socket file descriptor
+ * @param len Size of the vector
+ * @param vec Buffer with the vector
+ * @return Error code of the execution
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
+ */
+int send_vector(const int sd, int len, const double vec[len]) {
+    char str_num[DBL_MAX_SIZE + 1];
+    for (int i = 0; i < len; i++) {
+        snprintf(str_num, sizeof(str_num), "%.17le", vec[i]);
+        CHECK(sendMessage(sd, DBL_MAX_SIZE + 1, str_num),
+              "Error sending vector component");
+    }
+    return 0;
+}
+
+/**
+ * @brief Receives a vector of doubles as strings
+ *
+ * @param sd Socket file descriptor
+ * @param len Expected size of the vector
+ * @param vec Buffer in which the vector should be stored
+ * @return Error code of the execution
+ * @retval 0 Successful execution
+ * @retval -1 There was an error in the execution
+ */
+int recv_vector(const int sd, int len, double vec[len]) {
+    char vec_elem[DBL_MAX_SIZE + 1];
+
+    for (int i = 0; i < len; i++) {
+        CHECK(recvMessage(sd, DBL_MAX_SIZE + 1, vec_elem),
+              "Error receiving vector component");
+        sscanf(vec_elem, "%le", vec + i);
+    }
+
     return 0;
 }
 
