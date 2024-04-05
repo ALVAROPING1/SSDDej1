@@ -2,7 +2,6 @@
 #define COMM_H
 
 #include <stdio.h>
-#include <stdbool.h>
 
 #include "claves.h"
 
@@ -97,7 +96,4 @@ int send_value(const int sd,
                const int vec_size,
                const double vec[vec_size]);
 
-
-int deserializeVector(const int sd, int len, double *vec_m);
-int serializeVector(const int sd, int len, const double *v_m);
 #endif // COMM_H
