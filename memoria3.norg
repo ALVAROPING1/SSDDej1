@@ -1,0 +1,212 @@
+@document.meta
+title: Memoria Práctica 2
+subtitle: Sistemas Distribuidos
+author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 100475860
+@end
+
+@embed latex
+\clearpage
+@end
+
+* Diseño
+
+** Mecanismo de almacenamiento
+
+   El mecanismo de almacenamiento de las tuplas usado en esta entrega es el
+   mismo que en la entrega anterior. Su descripción se encuentra en la memoria
+   de la primera entrega.
+
+** Protocolo de aplicación
+
+   El protocolo de aplicación usado se basa en una única secuencia de mensajes
+   para todas las operaciones. Esto se decidió para simplificar la
+   implementación, ya que requería la menor cantidad de modificaciones respecto
+   de la anterior implementación basada en colas de mensajes POSIX, y permitía
+   desacoplar las comunicaciones de las operaciones a ejecutar. En las
+   operaciones que no usan alguno de los valores, estos se envían y reciben con
+   un valor por defecto de 0 para los enteros y vectores vacíos para los
+   vectores.
+
+   Con respecto a la anterior entrega, en esta se ha decidido hacer una
+   modificación en la secuencia de mensaje a transmitir. Esto es para asegurar la
+   interoperabilidad entre distintos dispositivos en el sistema de archivos distribuido
+   de esta práctica.
+
+   En este trabajo, la secuencia de envíos de mensajes será la siguiente:
+      ~ Envío de código de operación.
+      ~ Envío de cadena.
+      ~ Envío de vector de datos tipo `double`.
+      ~ Recibimiento de código de estado de operación desde el servidor.
+    
+   La serialización en esta entrega no es necesaria, ya que esa parte se genera
+   automáticamente por la herramienta RPC con la representacion de XDR por cada 
+   mensaje transmitido.
+
+   Seguidamente, en cada parte de la comunicación se espera a recibir cada uno
+   de los campos de parámetro de manera independiente e interpretarlos como el 
+   respectivo dato.
+
+   Cabe destacar las siguientes partes de este proceso:
+   - Las estructuras `petition` y `response` ya no son necesarias debido al 
+     nuevo planteamiento de secuencia de envíos por lo que se reemplazará su 
+     uso por el de los parámetros independientes.
+
+   - Dado que las interfaces del lado de cliente de los servicios no han cambiado,
+     se considerarán los mismos servicios ofrecidos por el servidor que los de la 
+     práctica anterior.
+
+   - Todos los datos tienen un proceso de `marshalling` y `unmarshalling`
+     asociado que los convierte en datos con formato `XDR` (formato por defecto
+     para RPCs).
+
+   - Para poder representar los vectores como parámetros en los archivos generados
+     por la herramienta `rpcgen`, es necesario crear un tipo vector vaiable de datos
+     tipo `double` en la interfaz de definición o IDL : `"typedef double vec<>"`.
+
+   - Para este proyecto, las tuplas se seguirán mandando con el mismo orden de envío
+     que en la práctica anterior (mandando primero su longitud y luego cada componente).
+     Afortunadamente, el servicio de RPC traduce el tipo definido anteriormente para
+     representar el vector variable ya es traducido por una estructura que contiene
+     la longitud del vector y un puntero a sus elementos. Por lo cual, ya no es necesario
+     representar cada uno de los elementos del vector como cadenas.
+
+** Estructura del proyecto
+
+   La estructura del proyecto es la siguiente:
+   
+   - Archivo `"claves_rpc.x"`: contiene la descripción de los procedimientos requeridos
+     para representar el servicio distribuido indicado en el enunciado. Nuestro programa
+     tendrá de nombre `"claves_rpc"` y versión `"claves"`.
+
+   - Archivo `"claves_rpc.h"`: en él se listan todas las interfaces a usar entre el cliente 
+     y el servidor así como los tipos definidos en el archivo ".x".
+
+   - Archivo `"claves_rpc_cliente.c"`: encapsula el contenido de comunicación desde la 
+     parte del cliente hacia el servidor. También incluye el código cliente a ejecutar
+     para testear el programa (solo incluye las llamadas a interfaces).
+   
+   - Archivo `"claves_rpc_server.c"`: donde se implementa el código de la parte del servidor
+     a ejecutar con los datos mandados del cliente. En nuestro caso, incluye las llamadas
+     a los procedimientos que gestionan los vectores por medio de creación de archivos.
+
+   - Archivo `"claves_rpc_xdr.c"`: localización de código generada automáticamente que incluye
+     las funciones de `marshalling` y `unmarshalling` de los datos. La estrategia a usar
+     consiste en realizar una conversión implícita de los datos al formato `XDR` a la hora de
+     transferirlos.
+
+   - Archivo `"claves_rpc_svc.c"`: archivo generado automáticamente en su totalidad que
+     encapsula toda la gestión de peticiones de datos realizada en la práctica anterior.
+     Esto incluye la función principal del servidor y sus rutinas de recibimiento de datos.
+
+   - Archivo `"claves_rpc_clnt.c"`: archivo totalmente generado por la herramienta que representa
+     la sección donde se hace el envío y recibimiento de datos por parte del cliente.
+
+* Compilación y pruebas
+
+** Compilación
+
+   Para compilar el proyecto, solo se necesita ejecutar `make` en el directorio
+   raíz del proyecto, ejecutando del makefile generado por la herramienta. 
+   Esto genera 4 archivos compilados:
+
+   - `servidor`: ejecutable del servidor.
+   - `cliente`: ejecutable del cliente que realiza las pruebas no concurrentes.
+   - `cliente_concurrent`: ejecutable del cliente que realiza las pruebas concurrentes.
+   - `libclaves.so`: biblioteca dinámica usada por los clientes que ofrece el servicio implementado.
+
+   La compilación está configurada para que los clientes busquen la biblioteca
+   dinámica `libclaves.so` en el directorio actual, por lo que no es necesario
+   modificar las variables de entorno para incluir el directorio actual en la
+   lista de directorios en los que buscar bibliotecas dinámicas.
+
+** Pruebas realizadas
+
+   Las pruebas realizadas en esta entrega son las mismas que en la entrega
+   anterior. Su descripción se encuentra en la memoria de la primera entrega.
+   Cabe destacar que se ha añadido un nuevo test no concurrente para las
+   funciones `set_value()` y `get_value()`, que usa datos válidos con el mayor
+   tamaño posible tras la serialización en las comunicaciones para comprobar que
+   todos los buffers usados para esto tienen un tamaño lo suficientemente grande.
+   Además, este test también comprueba que no se pierde precisión de los
+   `double`s en las comunicaciones.
+
+** Ejecución de las pruebas
+
+    Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de probar el funcionamiento del nuevo método de transmisión de mensajes empleado (sockets).
+
+*** Contexto de pruebas
+
+    Para la realización de dichas pruebas, es necesario definir un contexto de ejecución físico. Este incluirá los dispositivos con los que se realizarán las pruebas y como estarán conectados para poder recibir los mensajes y mandarlos.
+
+    - Dispositivos: tanto el cliente como el servidor se ejecutaran en un sistema operativo Linux
+    - Conexión empleada: Para estas pruebas, el primer dispositivo estará conectado físicamente mediante cable de fibra óptica al router que provee la conexión a internet. Por su parte, el segundo dispositivo estará conectado a la misma red mediante un adaptador inalámbrico/WiFi.
+    - Puerto definido: El puerto utilizado para las pruebas será el $3000$.
+    - Método de direccionamiento: Direccionamiento con nombre de dispositivo e IP
+
+    Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba.
+
+*** Definición de pruebas
+
+    Las pruebas a ejecutar son las siguientes:
+
+    ~ `Dispositivo 1` como servidor, `Dispositivo 2` como cliente, y direccionamiento mediante la IP en la red local.
+    ~ `Dispositivo 1` como cliente, `Dispositivo 2` como servidor, y direccionamiento mediante la IP en la red local.
+    ~ `Dispositivo 1` como servidor, `Dispositivo 2` como cliente, y direccionamiento mediante el nombre del dispositivo.
+    ~ `Dispositivo 1` como cliente, `Dispositivo 2` como servidor, y direccionamiento mediante el nombre del dispositivo.
+    ~ `Dispositivo 1` como cliente y servidor, con direccionamiento mediante su nombre del dispositivo (`localhost`)
+    ~ `Dispositivo 1` como cliente y servidor, con direccionamiento mediante su IP en la red local
+
+    Estas pruebas se realizarán tanto para las pruebas no concurrentes
+    (`./cliente`) como para las pruebas concurrentes (`./cliente_concurrent`).
+    Cabe destacar que, como ya se menciono en la memoria de la primera entrega,
+    para las pruebas no concurrentes se redireccionará la salida estándar de
+    error a un fichero para ocultarla con `./cliente 2> /dev/null`. Esto es
+    porque la biblioteca dinámica creada genera mensajes de error por esta
+    salida cuando se produce un fallo en la ejecución de una operación. Como
+    algunas de las pruebas comprueban que se producen los errores correctos para
+    entradas inválidas, si no se ocultasen estos mensajes, se podrían confundir
+    con los mensajes de fallo de los tests, los cuales se envían por la salida
+    estándar.
+
+*** Resultados
+
+    En todos los casos de prueba diseñados, los resultados esperados deberían
+    ser los siguientes:
+
+    @embed latex
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{pics/esperado_no_concurrente.png}
+        \caption{Resultado esperado pruebas no concurrentes}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.4968\textwidth]{pics/esperado_concurrente1.png}
+        \includegraphics[width=0.4968\textwidth]{pics/esperado_concurrente2.png}
+        \caption{Resultado esperado pruebas concurrentes}
+    \end{figure}
+    @end
+
+    Cabe destacar que, por obvios motivos, en las pruebas concurrentes no se
+    espera obtener los mismos IDs de procesos ni el mismo entrelazado. Esto solo
+    se muestra para verificar que los procesos realmente están enviando
+    peticiones al servidor concurrentemente.
+
+    Tras ejecutar todos los casos propuestos, se obtiene el resultado esperado
+    en todos ellos, pero no se incluirán aquí las imágenes de todos estos
+    resultados por brevedad al ser equivalentes. Solo se incluirá el resultado
+    del caso de prueba 1.
+
+    @embed latex
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{pics/obtenido_no_concurrente.png}
+        \caption{Resultado obtenido pruebas no concurrentes}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.4968\textwidth]{pics/obtenido_concurrente1.png}
+        \includegraphics[width=0.4968\textwidth]{pics/obtenido_concurrente2.png}
+        \caption{Resultado obtenido pruebas concurrentes}
+    \end{figure}
+    @end
