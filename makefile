@@ -7,8 +7,8 @@ SOURCES_SVC.h =
 SOURCES.x = claves_rpc.x
 
 TARGETS_SVC.c = server/claves_rpc_svc.c server/claves_rpc_server.c server/claves_rpc_xdr.c 
-TARGETS_CLNT.c = server/claves_rpc_clnt.c server/claves_rpc_client.c server/claves_rpc_xdr.c 
-TARGETS = server/claves_rpc.h server/claves_rpc_xdr.c server/claves_rpc_clnt.c server/claves_rpc_svc.c server/claves_rpc_client.c server/claves_rpc_server.c
+TARGETS_CLNT.c = server/claves_rpc_clnt.c client/claves.c server/claves_rpc_xdr.c 
+TARGETS = server/claves_rpc.h server/claves_rpc_xdr.c server/claves_rpc_clnt.c server/claves_rpc_svc.c client/claves.c server/claves_rpc_server.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
 OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)

@@ -8,7 +8,7 @@
 
 #include "../common/claves.h"
 #include "../common/error_handling.h"
-#include "claves_rpc.h"
+#include "../server/claves_rpc.h"
 
 // ╔═══════════════════════════════════════════════════════════════════════════╗
 // ║                             Server Connection                             ║
