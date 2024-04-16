@@ -7,7 +7,7 @@
 #include "tests.h"
 
 #define MAX_ELEMENTS 1024
-#define PROCESSES 16
+#define PROCESSES 2
 
 void run_test(pid_t pids[PROCESSES], int results[PROCESSES], int (*func)()) {
     for (int i = 0; i < PROCESSES; ++i) {

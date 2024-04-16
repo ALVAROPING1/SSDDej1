@@ -90,6 +90,7 @@ int get_value(const int key,
     CREATE_CONNECTION();
     tuple_result result;
     RPC(get_value_rpc_1(key, &result, clnt));
+    CHECK(result.result);
     strcpy(value1, result.str);
     *N_value2 = result.vec_size;
     memcpy(V_value2, result.vec, sizeof(*result.vec) * result.vec_size);
