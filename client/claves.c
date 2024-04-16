@@ -37,19 +37,12 @@ CLIENT* create_connection() {
 }
 
 /**
- * @brief Initializes a connection for an RPC, checking for errors and returning
- * -1 from the current function if there were. Otherwise, leaves the client
- *  pointer in a variable called `clnt`
- */
-#define CREATE_CONNECTION()                                                    \
-    CLIENT* clnt = create_connection();                                        \
-    if (clnt == NULL) return -1;
-
-/**
- * @brief Performs an RPC call checking for errors, and destroys the client
- * pointer used for the connection (assumes it's in a variable called `clnt`)
+ * @brief Performs an RPC call creating the connection, destroying it, and
+ * checking for errors
  */
 #define RPC(expr)                                                              \
+    CLIENT* clnt = create_connection();                                        \
+    if (clnt == NULL) return -1;                                               \
     if (expr != RPC_SUCCESS) clnt_perror(clnt, "call failed");                 \
     clnt_destroy(clnt);
 
@@ -61,7 +54,6 @@ CLIENT* create_connection() {
 #define FMT_ERROR(msg) ERROR("REQUEST PROCESSING ERROR", msg)
 
 int init() {
-    CREATE_CONNECTION();
     int result;
     RPC(init_rpc_1(&result, clnt));
     return result;
@@ -76,7 +68,6 @@ int set_value(const int key,
            N_value2);
     int str_size = strlen(value1);
     ASSERT(str_size <= MAX_STR_SIZE - 1, "Invalid string size %d", str_size)
-    CREATE_CONNECTION();
     int result;
     vec vector = {N_value2, (double*) V_value2};
     RPC(set_value_rpc_1(key, (char*) value1, vector, &result, clnt));
@@ -87,7 +78,6 @@ int get_value(const int key,
               char value1[MAX_STR_SIZE],
               int* N_value2,
               double V_value2[MAX_VEC_SIZE]) {
-    CREATE_CONNECTION();
     tuple_result result;
     RPC(get_value_rpc_1(key, &result, clnt));
     CHECK(result.result);
@@ -106,7 +96,6 @@ int modify_value(const int key,
            N_value2);
     int str_size = strlen(value1);
     ASSERT(str_size <= MAX_STR_SIZE - 1, "Invalid string size %d", str_size)
-    CREATE_CONNECTION();
     int result;
     vec vector = {N_value2, (double*) V_value2};
     RPC(modify_value_rpc_1(key, (char*) value1, vector, &result, clnt));
@@ -114,14 +103,12 @@ int modify_value(const int key,
 }
 
 int delete_key(const int key) {
-    CREATE_CONNECTION();
     int result;
     RPC(delete_key_rpc_1(key, &result, clnt));
     return result;
 }
 
 int exist(const int key) {
-    CREATE_CONNECTION();
     int result;
     RPC(exist_rpc_1(key, &result, clnt));
     return result;
