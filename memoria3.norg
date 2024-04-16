@@ -18,26 +18,6 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
 
 ** Protocolo de aplicación
 
-   El protocolo de aplicación usado se basa en una única secuencia de mensajes
-   para todas las operaciones. Esto se decidió para simplificar la
-   implementación, ya que requería la menor cantidad de modificaciones respecto
-   de la anterior implementación basada en colas de mensajes POSIX, y permitía
-   desacoplar las comunicaciones de las operaciones a ejecutar. En las
-   operaciones que no usan alguno de los valores, estos se envían y reciben con
-   un valor por defecto de 0 para los enteros y vectores vacíos para los
-   vectores.
-
-   Con respecto a la anterior entrega, en esta se ha decidido hacer una
-   modificación en la secuencia de mensaje a transmitir. Esto es para asegurar la
-   interoperabilidad entre distintos dispositivos en el sistema de archivos distribuido
-   de esta práctica.
-
-   En este trabajo, la secuencia de envíos de mensajes será la siguiente:
-      ~ Envío de código de operación.
-      ~ Envío de cadena.
-      ~ Envío de vector de datos tipo `double`.
-      ~ Recibimiento de código de estado de operación desde el servidor.
-    
    La serialización en esta entrega no es necesaria, ya que esa parte se genera
    automáticamente por la herramienta RPC con la representacion de XDR por cada 
    mensaje transmitido.
@@ -47,59 +27,51 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
    respectivo dato.
 
    Cabe destacar las siguientes partes de este proceso:
-   - Las estructuras `petition` y `response` ya no son necesarias debido al 
+
+   - Las estructuras `Request` y `Response` ya no son necesarias debido al 
      nuevo planteamiento de secuencia de envíos por lo que se reemplazará su 
      uso por el de los parámetros independientes.
-
-   - Dado que las interfaces del lado de cliente de los servicios no han cambiado,
-     se considerarán los mismos servicios ofrecidos por el servidor que los de la 
-     práctica anterior.
-
    - Todos los datos tienen un proceso de `marshalling` y `unmarshalling`
-     asociado que los convierte en datos con formato `XDR` (formato por defecto
+     asociado que los convierte en datos con formato `XDR` (generado formato por defecto
      para RPCs).
-
    - Para poder representar los vectores como parámetros en los archivos generados
-     por la herramienta `rpcgen`, es necesario crear un tipo vector vaiable de datos
-     tipo `double` en la interfaz de definición o IDL : `"typedef double vec<>"`.
-
-   - Para este proyecto, las tuplas se seguirán mandando con el mismo orden de envío
-     que en la práctica anterior (mandando primero su longitud y luego cada componente).
-     Afortunadamente, el servicio de RPC traduce el tipo definido anteriormente para
-     representar el vector variable ya es traducido por una estructura que contiene
-     la longitud del vector y un puntero a sus elementos. Por lo cual, ya no es necesario
-     representar cada uno de los elementos del vector como cadenas.
+     por la herramienta `rpcgen`, es necesario crear un tipo vector variable de datos
+     tipo `double` en la interfaz de definición o IDL: `typedef double vec<>`.
+   - Todas las funciones devuelven un entero con el resultado de la función a excepción
+     de `get_value()`, que devuelve una estructura con los valores de la tupla y el resultado
+     de la función. Esto es necesario porque las RPC usadas solo permiten un único valor
+     de salida. Esta estructura tiene espacio reservado estáticamente para el tamaño
+     máximo de la cadena de caracteres y el vector de `double`s para evitar tener que
+     reservar memoria dinámica.
+   - Ya que los vectores se envían con su longitud y luego su valor, reutilizamos esta
+     longitud para el vector de `double`s en vez de enviarla por separado.
 
 ** Estructura del proyecto
 
-   La estructura del proyecto es la siguiente:
-   
-   - Archivo `"claves_rpc.x"`: contiene la descripción de los procedimientos requeridos
-     para representar el servicio distribuido indicado en el enunciado. Nuestro programa
-     tendrá de nombre `"claves_rpc"` y versión `"claves"`.
+   El proyecto se divide en 3 carpetas:
 
-   - Archivo `"claves_rpc.h"`: en él se listan todas las interfaces a usar entre el cliente 
-     y el servidor así como los tipos definidos en el archivo ".x".
-
-   - Archivo `"claves_rpc_cliente.c"`: encapsula el contenido de comunicación desde la 
-     parte del cliente hacia el servidor. También incluye el código cliente a ejecutar
-     para testear el programa (solo incluye las llamadas a interfaces).
-   
-   - Archivo `"claves_rpc_server.c"`: donde se implementa el código de la parte del servidor
-     a ejecutar con los datos mandados del cliente. En nuestro caso, incluye las llamadas
-     a los procedimientos que gestionan los vectores por medio de creación de archivos.
-
-   - Archivo `"claves_rpc_xdr.c"`: localización de código generada automáticamente que incluye
-     las funciones de `marshalling` y `unmarshalling` de los datos. La estrategia a usar
-     consiste en realizar una conversión implícita de los datos al formato `XDR` a la hora de
-     transferirlos.
-
-   - Archivo `"claves_rpc_svc.c"`: archivo generado automáticamente en su totalidad que
-     encapsula toda la gestión de peticiones de datos realizada en la práctica anterior.
-     Esto incluye la función principal del servidor y sus rutinas de recibimiento de datos.
-
-   - Archivo `"claves_rpc_clnt.c"`: archivo totalmente generado por la herramienta que representa
-     la sección donde se hace el envío y recibimiento de datos por parte del cliente.
+   - /*CLIENT*/: Esta carpeta contiene todo lo relacionado con la parte del sistema del lado del cliente. La única modificación con respecto a la anterior entrega es que el fichero `claves.c` ahora llama a las funciones RPC definidas en `claves_rpc_clnt.c`.
+   - /*COMMON*/: Carpeta en la que se incluyen las declaraciones comunes para el cliente y el servidor. Contiene los mismos archivos que en la primera entrega a excepción de `messages.h`, ya que como ya se ha mencionado, estos se han eliminado al no ser necesarios.
+   - /*SERVER*/: Esta carpeta contiene todo lo relacionado con la parte del sistema del lado del servidor
+   -- Archivo `claves_rpc.x`: contiene la descripción de los procedimientos requeridos
+      para representar el servicio distribuido indicado en el enunciado. Nuestro programa
+      tendrá de nombre `CLAVES` y versión `CLAVESVER`.
+   -- Archivo `claves_rpc.h`: en él se listan todas las interfaces a usar entre el cliente 
+      y el servidor así como los tipos definidos en el archivo `.x`. Este archivo se genera
+      automáticamente por `rpcgen` con `claves_rpc.x`
+   -- Archivo `claves_rpc_server.c`: en este se implementan las RPC del lado del servidor.
+      Para minimizar las modificaciones al código de las anteriores entregas, la implementación
+      se mantiene en el fichero `servidor_claves.c` y las RPC únicamente llaman a estas funciones
+      y adaptan la interfaz a la usada por las RPC.
+   -- Archivo `claves_rpc_xdr.c`: localización del código generada automáticamente que incluye
+      las funciones de `marshalling` y `unmarshalling` de los datos. La estrategia a usar
+      consiste en realizar una conversión implícita de los datos al formato `XDR` a la hora de
+      transferirlos.
+   -- Archivo `claves_rpc_svc.c`: archivo generado automáticamente en su totalidad que
+      encapsula toda la gestión de peticiones de datos realizada en la práctica anterior.
+      Esto incluye la función principal del servidor y sus rutinas de recibimiento de peticiones.
+   -- Archivo `claves_rpc_clnt.c`: archivo totalmente generado por la herramienta que representa
+      la sección donde se hace el envío y recibimiento de datos por parte del cliente.
 
 * Compilación y pruebas
 
@@ -123,16 +95,10 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
 
    Las pruebas realizadas en esta entrega son las mismas que en la entrega
    anterior. Su descripción se encuentra en la memoria de la primera entrega.
-   Cabe destacar que se ha añadido un nuevo test no concurrente para las
-   funciones `set_value()` y `get_value()`, que usa datos válidos con el mayor
-   tamaño posible tras la serialización en las comunicaciones para comprobar que
-   todos los buffers usados para esto tienen un tamaño lo suficientemente grande.
-   Además, este test también comprueba que no se pierde precisión de los
-   `double`s en las comunicaciones.
 
 ** Ejecución de las pruebas
 
-    Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de probar el funcionamiento del nuevo método de transmisión de mensajes empleado (sockets).
+   Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de probar el funcionamiento del nuevo método de transmisión de mensajes empleado (sockets).
 
 *** Contexto de pruebas
 
