@@ -138,20 +138,26 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
     peticiones al servidor concurrentemente.
 
     Tras ejecutar todos los casos propuestos, se obtiene el resultado esperado
-    en todos ellos para los casos no concurrentes. Sin embargo, por motivos que creemos
-    diagnosticar como problemas de parámetros en la cola de clientes en remoto 
-    (encolado de clientes para llamada listen), 
+    en todos ellos para los casos no concurrentes (los cuales coinciden con los de la anterior entrega).
+    Sin embargo, por motivos que creemos diagnosticar como problemas de parámetros en la cola de clientes en remoto 
+    (reside en la llamada al método `listen` del servidor RPC), 
     las pruebas concurrentes únicamente tienen un comportamiento esperado ejecutándolas
-    con un número de hilos de 2 a 13 como parámetro(`Constante PROCESSES en el código`).
+    con un número de hilos de 2 a 13 como parámetro (constante "PROCESSES" en /cliente_concurrent.c/).
 
-    Luego, para esta entrega, se incluirán las imágenes representativas de las pruebas no 
-    concurrentes. Dado que los resultados de las pruebas son equivalentes, solo se incluirá
-    el resultado del caso de prueba 1.
+    Para finalizar, sobre las ilustraciones de esta entrega, se incluirán las imágenes representativas de las pruebas no 
+    concurrentes además de una muestra del comportamiento esperado de las concurrentes. Dado que los resultados de las
+    pruebas son equivalentes, solo se incluirá el resultado del caso de prueba 1.
 
     @embed latex
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{pics/obtenido_no_concurrente.png}
         \caption{Resultado obtenido pruebas no concurrentes}
+    \end{figure} 
+    \begin{figure}[H]
+      \centering
+      \includegraphics[width=\textwidth]{pics/concurrent_expected1.png}
+      \includegraphics[width=\textwidth]{pics/concurrent_expected2.png}
+      \caption{Resultado esperado de pruebas concurrentes}
     \end{figure}
     @end
