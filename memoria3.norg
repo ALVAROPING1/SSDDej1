@@ -139,7 +139,8 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
 
     Tras ejecutar todos los casos propuestos, se obtiene el resultado esperado
     en todos ellos para los casos no concurrentes. Sin embargo, por motivos que creemos
-    diagnosticar como problemas de red (problemas de timeout, o señal de red), 
+    diagnosticar como problemas de parámetros en la cola de clientes en remoto 
+    (encolado de clientes para llamada listen), 
     las pruebas concurrentes únicamente tienen un comportamiento esperado ejecutándolas
     con un número de hilos de 2 a 13 como parámetro(`Constante PROCESSES en el código`).
 
