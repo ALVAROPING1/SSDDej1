@@ -156,8 +156,8 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
     \end{figure} 
     \begin{figure}[H]
       \centering
-      \includegraphics[width=\textwidth]{pics/concurrent_expected1.png}
-      \includegraphics[width=\textwidth]{pics/concurrent_expected2.png}
+      \includegraphics[width=0.4968]{pics/concurrent_expected1.png}
+      \includegraphics[width=0.4968]{pics/concurrent_expected2.png}
       \caption{Resultado esperado de pruebas concurrentes}
     \end{figure}
     @end
