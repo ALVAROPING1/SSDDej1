@@ -98,32 +98,17 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
 
 ** Ejecución de las pruebas
 
-   Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de probar el funcionamiento del nuevo método de transmisión de mensajes empleado (sockets).
+   Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de testar las pruebas realizadas en anteriores prácticas, variando el método de generación de comunicaciones (ficheros generados por un gestor RPC).
 
 *** Contexto de pruebas
-
-    Para la realización de dichas pruebas, es necesario definir un contexto de ejecución físico. Este incluirá los dispositivos con los que se realizarán las pruebas y como estarán conectados para poder recibir los mensajes y mandarlos.
-
-    - Dispositivos: tanto el cliente como el servidor se ejecutaran en un sistema operativo Linux
-    - Conexión empleada: Para estas pruebas, el primer dispositivo estará conectado físicamente mediante cable de fibra óptica al router que provee la conexión a internet. Por su parte, el segundo dispositivo estará conectado a la misma red mediante un adaptador inalámbrico/WiFi.
-    - Puerto definido: El puerto utilizado para las pruebas será el $3000$.
-    - Método de direccionamiento: Direccionamiento con nombre de dispositivo e IP
-
-    Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba.
+    
+    Para la ejecución de las pruebas actuales, se reutilizará el escenario físico de la entrega anterior. El cual incluye dos dispositivos, de los que uno actuará como servidor y otro como cliente. La unica variación con respecto al contexto anterior, es que las pruebas se testean en dos ordenadores con un Sistema Operativo Linux (debian). Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba.
 
 *** Definición de pruebas
 
-    Las pruebas a ejecutar son las siguientes:
-
-    ~ `Dispositivo 1` como servidor, `Dispositivo 2` como cliente, y direccionamiento mediante la IP en la red local.
-    ~ `Dispositivo 1` como cliente, `Dispositivo 2` como servidor, y direccionamiento mediante la IP en la red local.
-    ~ `Dispositivo 1` como servidor, `Dispositivo 2` como cliente, y direccionamiento mediante el nombre del dispositivo.
-    ~ `Dispositivo 1` como cliente, `Dispositivo 2` como servidor, y direccionamiento mediante el nombre del dispositivo.
-    ~ `Dispositivo 1` como cliente y servidor, con direccionamiento mediante su nombre del dispositivo (`localhost`)
-    ~ `Dispositivo 1` como cliente y servidor, con direccionamiento mediante su IP en la red local
-
-    Estas pruebas se realizarán tanto para las pruebas no concurrentes
+    Las pruebas utilizadas están definidas en el proyecto anterior. Estas pruebas se realizarán tanto para las pruebas no concurrentes
     (`./cliente`) como para las pruebas concurrentes (`./cliente_concurrent`).
+
     Cabe destacar que, como ya se menciono en la memoria de la primera entrega,
     para las pruebas no concurrentes se redireccionará la salida estándar de
     error a un fichero para ocultarla con `./cliente 2> /dev/null`. Esto es
@@ -145,12 +130,6 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
         \includegraphics[width=\textwidth]{pics/esperado_no_concurrente.png}
         \caption{Resultado esperado pruebas no concurrentes}
     \end{figure}
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.4968\textwidth]{pics/esperado_concurrente1.png}
-        \includegraphics[width=0.4968\textwidth]{pics/esperado_concurrente2.png}
-        \caption{Resultado esperado pruebas concurrentes}
-    \end{figure}
     @end
 
     Cabe destacar que, por obvios motivos, en las pruebas concurrentes no se
@@ -159,20 +138,19 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
     peticiones al servidor concurrentemente.
 
     Tras ejecutar todos los casos propuestos, se obtiene el resultado esperado
-    en todos ellos, pero no se incluirán aquí las imágenes de todos estos
-    resultados por brevedad al ser equivalentes. Solo se incluirá el resultado
-    del caso de prueba 1.
+    en todos ellos para los casos no concurrentes. Sin embargo, por motivos que creemos
+    diagnosticar como problemas de red (problemas de timeout, o señal de red), 
+    las pruebas concurrentes únicamente tienen un comportamiento esperado ejecutándolas
+    con un número de hilos de 2 a 13 como parámetro(`Constante PROCESSES en el código`).
+
+    Luego, para esta entrega, se incluirán las imágenes representativas de las pruebas no 
+    concurrentes. Dado que los resultados de las pruebas son equivalentes, solo se incluirá
+    el resultado del caso de prueba 1.
 
     @embed latex
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{pics/obtenido_no_concurrente.png}
         \caption{Resultado obtenido pruebas no concurrentes}
-    \end{figure}
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.4968\textwidth]{pics/obtenido_concurrente1.png}
-        \includegraphics[width=0.4968\textwidth]{pics/obtenido_concurrente2.png}
-        \caption{Resultado obtenido pruebas concurrentes}
     \end{figure}
     @end
