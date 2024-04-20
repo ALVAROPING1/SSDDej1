@@ -46,4 +46,4 @@ $(SERVER) : $(OBJECTS_SVC)
 	$(LINK.c) -o $(SERVER) $(OBJECTS_SVC) $(LDLIBS)
 
 clean:
-	rm client/*.o server/*.o common/*.o
+	rm client/*.o server/*.o
