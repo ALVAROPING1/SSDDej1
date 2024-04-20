@@ -1,5 +1,5 @@
 @document.meta
-title: Memoria Práctica 2
+title: Memoria Práctica 3
 subtitle: Sistemas Distribuidos
 author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 100475860
 @end
@@ -19,24 +19,22 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
 ** Protocolo de aplicación
 
    La serialización en esta entrega no es necesaria, ya que esa parte se genera
-   automáticamente por la herramienta RPC con la representacion de XDR por cada 
-   mensaje transmitido.
-
-   Seguidamente, en cada parte de la comunicación se espera a recibir cada uno
-   de los campos de parámetro de manera independiente e interpretarlos como el 
+   automáticamente por la herramienta RPC con la representacion de XDR por cada
+   mensaje transmitido. Cada parte de la comunicación se espera a recibir cada
+   uno de los parámetros de manera independiente y los interpreta como el
    respectivo dato.
 
    Cabe destacar las siguientes partes de este proceso:
 
-   - Las estructuras `Request` y `Response` ya no son necesarias debido al 
-     nuevo planteamiento de secuencia de envíos por lo que se reemplazará su 
+   - Las estructuras `Request` y `Response` ya no son necesarias debido al
+     nuevo planteamiento de secuencia de envíos, por lo que se reemplazará su
      uso por el de los parámetros independientes.
    - Todos los datos tienen un proceso de `marshalling` y `unmarshalling`
-     asociado que los convierte en datos con formato `XDR` (generado formato por defecto
-     para RPCs).
+     asociado que los convierte en datos con formato `XDR` (generado formato por
+     defecto para RPCs).
    - Para poder representar los vectores como parámetros en los archivos generados
-     por la herramienta `rpcgen`, es necesario crear un tipo vector variable de datos
-     tipo `double` en la interfaz de definición o IDL: `typedef double vec<>`.
+     por la herramienta `rpcgen`, es necesario crear un tipo vector variable de
+     `double`s en la definición de las interfaces: `typedef double vec<>`.
    - Todas las funciones devuelven un entero con el resultado de la función a excepción
      de `get_value()`, que devuelve una estructura con los valores de la tupla y el resultado
      de la función. Esto es necesario porque las RPC usadas solo permiten un único valor
@@ -50,36 +48,47 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
 
    El proyecto se divide en 3 carpetas:
 
-   - /*CLIENT*/: Esta carpeta contiene todo lo relacionado con la parte del sistema del lado del cliente. La única modificación con respecto a la anterior entrega es que el fichero `claves.c` ahora llama a las funciones RPC definidas en `claves_rpc_clnt.c`.
-   - /*COMMON*/: Carpeta en la que se incluyen las declaraciones comunes para el cliente y el servidor. Contiene los mismos archivos que en la primera entrega a excepción de `messages.h`, ya que como ya se ha mencionado, estos se han eliminado al no ser necesarios.
-   - /*SERVER*/: Esta carpeta contiene todo lo relacionado con la parte del sistema del lado del servidor
-   -- Archivo `claves_rpc.x`: contiene la descripción de los procedimientos requeridos
-      para representar el servicio distribuido indicado en el enunciado. Nuestro programa
-      tendrá de nombre `CLAVES` y versión `CLAVESVER`.
-   -- Archivo `claves_rpc.h`: en él se listan todas las interfaces a usar entre el cliente 
-      y el servidor así como los tipos definidos en el archivo `.x`. Este archivo se genera
-      automáticamente por `rpcgen` con `claves_rpc.x`
-   -- Archivo `claves_rpc_server.c`: en este se implementan las RPC del lado del servidor.
-      Para minimizar las modificaciones al código de las anteriores entregas, la implementación
-      se mantiene en el fichero `servidor_claves.c` y las RPC únicamente llaman a estas funciones
-      y adaptan la interfaz a la usada por las RPC.
-   -- Archivo `claves_rpc_xdr.c`: localización del código generada automáticamente que incluye
-      las funciones de `marshalling` y `unmarshalling` de los datos. La estrategia a usar
-      consiste en realizar una conversión implícita de los datos al formato `XDR` a la hora de
-      transferirlos.
-   -- Archivo `claves_rpc_svc.c`: archivo generado automáticamente en su totalidad que
-      encapsula toda la gestión de peticiones de datos realizada en la práctica anterior.
-      Esto incluye la función principal del servidor y sus rutinas de recibimiento de peticiones.
-   -- Archivo `claves_rpc_clnt.c`: archivo totalmente generado por la herramienta que representa
-      la sección donde se hace el envío y recibimiento de datos por parte del cliente.
+   - /*CLIENT*/: Esta carpeta contiene todo lo relacionado con la parte del
+     sistema del lado del cliente. La única modificación con respecto a la
+     anterior entrega es que el fichero `claves.c` ahora llama a las funciones
+     RPC definidas en `claves_rpc_clnt.c`.
+   - /*COMMON*/: Carpeta en la que se incluyen las declaraciones comunes para el
+     cliente y el servidor. Contiene los mismos archivos que en la primera
+     entrega a excepción de `messages.h`, ya que como se ha mencionado, estas
+     estructuras se han eliminado al no ser necesarias.
+   - /*SERVER*/: Esta carpeta contiene todo lo relacionado con la parte del
+     sistema del lado del servidor.
+   -- Archivo `servidor_claves.c`: Archivo con la implementación del servicio
+      del lado del servidor. No se han realizado cambios significativos respecto de
+      la anterior entrega.
+   -- Archivo `claves_rpc.x`: contiene la descripción de los procedimientos
+      requeridos para representar el servicio distribuido indicado en el
+      enunciado. Nuestro programa tendrá de nombre `CLAVES` y versión `CLAVESVER`.
+   -- Archivo `claves_rpc_server.c`: en este se implementan las RPC del lado del
+      servidor. Para minimizar las modificaciones al código de las anteriores
+      entregas, la implementación se mantiene en el fichero `servidor_claves.c`
+      y las RPC únicamente llaman a estas funciones y adaptan la interfaz a la
+      usada por las RPC.
+   -- Archivo `claves_rpc.h`: en él se listan todas las interfaces a usar entre
+      el cliente y el servidor, así como los tipos definidos en el archivo `.x`.
+      Este archivo se genera automáticamente por `rpcgen` con `claves_rpc.x`.
+   -- Archivo `claves_rpc_xdr.c`: localización del código generada automáticamente
+      que incluye las funciones de `marshalling` y `unmarshalling` de los datos.
+      La estrategia a usar consiste en realizar una conversión implícita de
+      los datos al formato `XDR` a la hora de transferirlos.
+   -- Archivo `claves_rpc_svc.c`: archivo generado automáticamente que encapsula
+      toda la gestión de peticiones de datos realizada en la práctica anterior.
+      Esto incluye la función principal del servidor y sus rutinas de recepción de peticiones.
+   -- Archivo `claves_rpc_clnt.c`: archivo generado por la herramienta que
+      representa la sección donde se hace el envío y recepción de datos por
+      parte del cliente.
 
 * Compilación y pruebas
 
 ** Compilación
 
    Para compilar el proyecto, solo se necesita ejecutar `make` en el directorio
-   raíz del proyecto, ejecutando del makefile generado por la herramienta. 
-   Esto genera 4 archivos compilados:
+   raíz del proyecto. Esto genera 4 archivos compilados:
 
    - `servidor`: ejecutable del servidor.
    - `cliente`: ejecutable del cliente que realiza las pruebas no concurrentes.
@@ -94,19 +103,27 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
 ** Pruebas realizadas
 
    Las pruebas realizadas en esta entrega son las mismas que en la entrega
-   anterior. Su descripción se encuentra en la memoria de la primera entrega.
+   anterior. Su descripción se encuentra en la memoria de la primera y segunda
+   entrega.
 
 ** Ejecución de las pruebas
 
-   Esta sección representa las pruebas realizadas sobre la práctica en diferentes dispositivos con la finalidad de testar las pruebas realizadas en anteriores prácticas, variando el método de generación de comunicaciones (ficheros generados por un gestor RPC).
+   Esta sección representa las pruebas realizadas sobre la práctica en diferentes
+   dispositivos con la finalidad de probar las pruebas realizadas en anteriores
+   prácticas, variando el método de generación de comunicaciones
+   (ficheros generados por el gestor RPC `rpcgen`).
 
 *** Contexto de pruebas
-    
-    Para la ejecución de las pruebas actuales, se reutilizará el escenario físico de la entrega anterior. El cual incluye dos dispositivos, de los que uno actuará como servidor y otro como cliente. La unica variación con respecto al contexto anterior, es que las pruebas se testean en dos ordenadores con un Sistema Operativo Linux (debian). Con el objetivo de realizar las pruebas lo más completas posibles, el rol de servidor y cliente se van a ir intercambiando entre los dos dispositivos en cada prueba.
+
+    Para la ejecución de las pruebas actuales, se reutilizará el escenario físico
+    de la entrega anterior. Con el objetivo de realizar las pruebas lo más completas
+    posibles, el rol de servidor y cliente se van a ir intercambiando entre los
+    dos dispositivos en cada prueba.
 
 *** Definición de pruebas
 
-    Las pruebas utilizadas están definidas en el proyecto anterior. Estas pruebas se realizarán tanto para las pruebas no concurrentes
+    Las pruebas utilizadas están definidas en la memoria de la anterior entrega.
+    Estas pruebas se realizarán tanto para las pruebas no concurrentes
     (`./cliente`) como para las pruebas concurrentes (`./cliente_concurrent`).
 
     Cabe destacar que, como ya se menciono en la memoria de la primera entrega,
@@ -127,8 +144,14 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
     @embed latex
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{pics/esperado_no_concurrente.png}
+        \includegraphics[width=\textwidth]{pics/esperado_no_concurrente_2.png}
         \caption{Resultado esperado pruebas no concurrentes}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.4968\textwidth]{pics/esperado_concurrente1_2.png}
+        \includegraphics[width=0.4968\textwidth]{pics/esperado_concurrente2_2.png}
+        \caption{Resultado esperado pruebas concurrentes}
     \end{figure}
     @end
 
@@ -138,26 +161,40 @@ author: Álvaro Guerrero Espinosa - 100472294\break Adrian Cortázar Lería - 10
     peticiones al servidor concurrentemente.
 
     Tras ejecutar todos los casos propuestos, se obtiene el resultado esperado
-    en todos ellos para los casos no concurrentes (los cuales coinciden con los de la anterior entrega).
-    Sin embargo, por motivos que creemos diagnosticar como problemas de parámetros en la cola de clientes en remoto 
-    (reside en la llamada al método `listen` del servidor RPC), 
-    las pruebas concurrentes únicamente tienen un comportamiento esperado ejecutándolas
-    con un número de hilos de 2 a 13 como parámetro (constante "PROCESSES" en /cliente_concurrent.c/).
+    en todos ellos para los casos no concurrentes (los cuales coinciden con los
+    de la anterior entrega). Para los casos concurrentes, sin embargo, se obtiene
+    el resultado correcto solo cuando el servidor y los clientes están en la
+    misma máquina o se usan de 2 a 13 procesos concurrentes (constante `PROCESSES`
+    en `client/cliente_concurrent.c`). Cuando esto no ocurre, el sistema RPC
+    genera un error en los clientes. Creemos que esto se debe a que, como en
+    Linux `rpcgen` no genera un servidor concurrente, el uso de demasiados
+    procesos concurrentes hace que se llene alguna cola de espera interna de las
+    RPCs, y esto impide que se añadan más procesos lo cual causa el error.
+    Debido a esto, en las pruebas con el servidor y los clientes en distintas
+    máquinas, se ha reducido el número de procesos concurrentes a 13.
 
-    Para finalizar, sobre las ilustraciones de esta entrega, se incluirán las imágenes representativas de las pruebas no 
-    concurrentes además de una muestra del comportamiento esperado de las concurrentes. Dado que los resultados de las
-    pruebas son equivalentes, solo se incluirá el resultado del caso de prueba 1.
+    Para finalizar, se incluyen las imágenes de los resultados obtenidos en las
+    pruebas. Dado que los resultados de las pruebas son equivalentes, solo se
+    incluirá el resultado de uno de los casos de prueba. Además, también se
+    incluirá el error obtenido en las pruebas concurrentes cuando el número de
+    procesos es superior a 13 y el servidor y los clientes están en diferentes
+    máquinas.
 
     @embed latex
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{pics/obtenido_no_concurrente.png}
+        \includegraphics[width=\textwidth]{pics/obtenido_no_concurrente_2.png}
         \caption{Resultado obtenido pruebas no concurrentes}
-    \end{figure} 
+    \end{figure}
     \begin{figure}[H]
-      \centering
-      \includegraphics[width=0.4968]{pics/concurrent_expected1.png}
-      \includegraphics[width=0.4968]{pics/concurrent_expected2.png}
-      \caption{Resultado esperado de pruebas concurrentes}
+        \centering
+        \includegraphics[width=\textwidth]{pics/rpc_error.png}
+        \caption{Error de RPC obtenido en pruebas concurrentes}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.4968\textwidth]{pics/obtenido_concurrente1_2.png}
+        \includegraphics[width=0.4968\textwidth]{pics/obtenido_concurrente2_2.png}
+        \caption{Resultado obtenido pruebas concurrentes}
     \end{figure}
     @end
